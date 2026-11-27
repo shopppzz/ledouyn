@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <title>TDAT KEY - Hệ Thống Key Tự Động</title>
+  <title>LEDOUYN67 - Hệ Thống Key Tự Động</title>
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
     body { margin: 0; background: #090b10; color: #f8fafc; padding: 12px; }
@@ -89,7 +89,7 @@
 <div class="wrap">
 
   <div id="lagNoticeBox" class="lag-notice" style="display:none;">
-    <div style="font-weight:700; color:#fbbf24; font-size:14px;">⚠️ Thông báo hệ thống TDAT KEY • ADMIN LÀ TDAT</div>
+    <div style="font-weight:700; color:#fbbf24; font-size:14px;">⚠️ Thông báo hệ thống LEDOUYN67 • ADMIN LÀ LEDOUYN67</div>
     <div style="font-size:13px; margin-top:3px;">Kho key độc lập, khi nào thấy báo còn hàng mới tiến hành mua.</div>
     <div>
       <a class="lag-free-link" href="https://zalo.me" target="_blank" rel="noopener noreferrer">
@@ -118,7 +118,7 @@
     <div class="modal-card">
       <div style="color:#f87171; font-size:17px; font-weight:800;">🚫 Thông báo nạp số dư</div>
       <div style="color:#fecaca; font-size:13.5px; line-height:1.5; margin:10px 0;">
-        ADMIN LÀ TDAT — Vui lòng liên hệ Admin <b style="color:#38bdf8;">TDAT KEY</b> để nạp số dư vào hệ thống này.
+        ADMIN LÀ LEDOUYN67 — Vui lòng liên hệ Admin <b style="color:#38bdf8;">LEDOUYN67</b> để nạp số dư vào hệ thống này.
       </div>
       <button class="dark" style="margin:0;" onclick="closeNapModal()">Đóng</button>
     </div>
@@ -141,7 +141,7 @@
   <div id="globalErrBox" class="err"></div>
 
   <div id="authBox" class="card">
-    <h2>⚡ TDAT KEY - Đăng nhập / Đăng ký (ADMIN LÀ TDAT)</h2>
+    <h2>⚡ LEDOUYN67 - Đăng nhập / Đăng ký (ADMIN LÀ LEDOUYN67)</h2>
     <input id="emailInput" type="text" placeholder="Nhập tên tài khoản (đặt tên gì cũng được)..." />
     <input id="passInput" type="password" placeholder="Nhập mật khẩu (ít nhất 6 ký tự)..." />
     <div style="display:flex; gap:8px;">
@@ -154,14 +154,14 @@
   <div id="shopArea">
     <div class="card">
       <div class="profile-top">
-        <div id="avatarCircle" class="avatar-circle">T</div>
+        <div id="avatarCircle" class="avatar-circle">L</div>
         <div>
           <div class="profile-name">
             <span id="profileDisplayName">Khách</span>
             <span id="profileRoleBadge" class="role-badge">Chưa đăng nhập</span>
             <span id="profileCtvBadge" class="ctv-badge" style="display:none;">CTV</span>
           </div>
-          <div id="profileEmailSub" class="profile-sub">ADMIN LÀ TDAT • Xem gói key tự do • Đăng nhập để mua hoặc quản lý</div>
+          <div id="profileEmailSub" class="profile-sub">ADMIN LÀ LEDOUYN67 • Xem gói key tự do • Đăng nhập để mua hoặc quản lý</div>
         </div>
       </div>
       <div class="header-btns">
@@ -269,7 +269,7 @@
 
     <div id="tabPanel_admin" style="display:none;">
       <div class="card">
-        <h2>Quản lý Admin • ADMIN LÀ TDAT</h2>
+        <h2>Quản lý Admin • ADMIN LÀ LEDOUYN67</h2>
         <p style="font-size:12.5px; color:#94a3b8; margin-top:0;">Key chưa bán tự động xóa sau 30 ngày kể từ lúc nhập kho.</p>
 
         <div id="adminRoleSection" class="item" style="border-color:#a855f7;">
@@ -369,7 +369,7 @@
   </div>
 </div>
 <script>
-  const LAG_SNOOZE_KEY = "tdat_lag_notice_until_2h";
+  const LAG_SNOOZE_KEY = "ledouyn67_lag_notice_until_2h";
   const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
   let latestModalKeyText = "";
 
@@ -453,7 +453,7 @@
     signOut, onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
-    getDatabase, ref, get, set, update, push, remove, runTransaction, serverTimestamp
+    getDatabase, ref, get, set, update, push, remove, runTransaction
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
   const firebaseConfig = {
@@ -467,7 +467,7 @@
     measurementId: "G-LTE01R2724"
   };
 
-  const ROOT_ADMIN_EMAIL = "tdat@tdat.key";
+  const ROOT_ADMIN_EMAIL = "ledouyn67@tdat.key";
   const INTERNAL_DOMAIN = "tdat.key";
   const BULK_PRODUCT_ID = "td_bulk_400";
   const BULK_MIN_QTY = 20;
@@ -696,7 +696,7 @@
     document.getElementById("authBox").style.display = "none";
     document.getElementById("profileDisplayName").textContent = currentDisplayName;
     document.getElementById("avatarCircle").textContent = currentDisplayName.charAt(0).toUpperCase();
-    document.getElementById("profileEmailSub").textContent = user.email + " • ADMIN LÀ TDAT";
+    document.getElementById("profileEmailSub").textContent = user.email + " • ADMIN LÀ LEDOUYN67";
 
     const roleBadge = document.getElementById("profileRoleBadge");
     if (isAdmin()) {
@@ -717,10 +717,10 @@
     currentBalance = 0; currentTotalDeposited = 0;
     document.getElementById("authBox").style.display = "block";
     document.getElementById("profileDisplayName").textContent = "Khách";
-    document.getElementById("avatarCircle").textContent = "T";
+    document.getElementById("avatarCircle").textContent = "L";
     document.getElementById("profileRoleBadge").textContent = "Chưa đăng nhập";
     document.getElementById("profileCtvBadge").style.display = "none";
-    document.getElementById("profileEmailSub").textContent = "ADMIN LÀ TDAT • Xem gói key tự do • Đăng nhập để mua hoặc quản lý";
+    document.getElementById("profileEmailSub").textContent = "ADMIN LÀ LEDOUYN67 • Xem gói key tự do • Đăng nhập để mua hoặc quản lý";
     document.getElementById("tabBtn_admin").style.display = "none";
     document.getElementById("statBalance").textContent = "0đ";
     document.getElementById("statTotalSpent").textContent = "0đ";
