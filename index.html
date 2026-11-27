@@ -453,9 +453,8 @@
     signOut, onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
-    getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc,
-    collection, getDocs, query, where, serverTimestamp, runTransaction
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    getDatabase, ref, get, set, update, push, remove, runTransaction, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCNKAN5EnqaweStbWKsR-6JISZ7qCicrPE",
@@ -478,15 +477,15 @@
   const KEY_TTL_DAYS = 30;
   const KEY_TTL_MS = KEY_TTL_DAYS * 24 * 60 * 60 * 1000;
 
-  const COL_USERS = "td_users";
-  const COL_PRODUCTS = "td_products";
-  const COL_KEYS = "td_keys";
-  const COL_ORDERS = "td_orders";
-  const COL_BALANCE_LOGS = "td_balance_logs";
+  const PATH_USERS = "td_users";
+  const PATH_PRODUCTS = "td_products";
+  const PATH_KEYS = "td_keys";
+  const PATH_ORDERS = "td_orders";
+  const PATH_BALANCE_LOGS = "td_balance_logs";
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const db = getFirestore(app);
+  const db = getDatabase(app);
 
   let currentUser = null;
   let currentDisplayName = "";
@@ -576,6 +575,7 @@
 
   function getTimestampMs(ts) {
     if (!ts) return null;
+    if (typeof ts === "number") return ts;
     if (typeof ts.toMillis === "function") return ts.toMillis();
     if (typeof ts.seconds === "number") return ts.seconds * 1000;
     const parsed = new Date(ts).getTime();
@@ -599,6 +599,15 @@
       .replace(/'/g, "&#39;");
   }
 
+  function snapToArray(snap) {
+    const arr = [];
+    if (!snap || !snap.exists()) return arr;
+    snap.forEach(function (child) {
+      arr.push({ id: child.key, ...child.val() });
+    });
+    return arr;
+  }
+
   window.registerUser = async function () {
     clearInlineFeedbacks();
     const rawUser = document.getElementById("emailInput").value.trim();
@@ -612,9 +621,9 @@
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
       const isRoot = (email === ROOT_ADMIN_EMAIL);
-      await setDoc(doc(db, COL_USERS, cred.user.uid), {
+      await set(ref(db, PATH_USERS + "/" + cred.user.uid), {
         uid: cred.user.uid, username: username, email: email,
-        balance: 0, totalDeposited: 0, isAdmin: isRoot, isCtv: false, createdAt: serverTimestamp()
+        balance: 0, totalDeposited: 0, isAdmin: isRoot, isCtv: false, createdAt: Date.now()
       });
     } catch (e) {
       let msg = e.message || "Đăng ký thất bại.";
@@ -659,15 +668,15 @@
   };
 
   async function loadUserProfile(user) {
-    const userRef = doc(db, COL_USERS, user.uid);
-    const snap = await getDoc(userRef);
+    const userRef = ref(db, PATH_USERS + "/" + user.uid);
+    const snap = await get(userRef);
     const isRoot = (user.email === ROOT_ADMIN_EMAIL);
 
     if (!snap.exists()) {
       const username = getCleanUsername("", user.email);
-      await setDoc(userRef, {
+      await set(userRef, {
         uid: user.uid, username: username, email: user.email,
-        balance: 0, totalDeposited: 0, isAdmin: isRoot, isCtv: false, createdAt: serverTimestamp()
+        balance: 0, totalDeposited: 0, isAdmin: isRoot, isCtv: false, createdAt: Date.now()
       });
       currentDisplayName = username;
       currentIsAdmin = isRoot;
@@ -675,13 +684,13 @@
       currentBalance = 0;
       currentTotalDeposited = 0;
     } else {
-      const data = snap.data();
+      const data = snap.val();
       currentDisplayName = data.username || getCleanUsername("", user.email);
       currentIsAdmin = Boolean(data.isAdmin || isRoot);
       currentIsCtv = Boolean(data.isCtv);
       currentBalance = Number(data.balance || 0);
       currentTotalDeposited = Number(data.totalDeposited || 0);
-      if (isRoot && !data.isAdmin) await updateDoc(userRef, { isAdmin: true });
+      if (isRoot && !data.isAdmin) await update(userRef, { isAdmin: true });
     }
 
     document.getElementById("authBox").style.display = "none";
@@ -723,17 +732,17 @@
   }
 
   async function loadProductsAndStocks() {
-    const prodSnap = await getDocs(collection(db, COL_PRODUCTS));
-    productsCache = [];
-    prodSnap.forEach(function (d) { productsCache.push({ id: d.id, ...d.data() }); });
+    const prodSnap = await get(ref(db, PATH_PRODUCTS));
+    productsCache = snapToArray(prodSnap);
     productsCache.sort(function (a, b) { return Number(a.price || 0) - Number(b.price || 0); });
 
-    const keysSnap = await getDocs(query(collection(db, COL_KEYS), where("sold", "==", false)));
+    const keysSnap = await get(ref(db, PATH_KEYS));
+    const allKeys = snapToArray(keysSnap);
     stockCounts = { pkg: {}, bulk: 0, ctv: 0 };
     const now = Date.now();
 
-    keysSnap.forEach(function (d) {
-      const k = d.data();
+    allKeys.forEach(function (k) {
+      if (k.sold) return;
       const createdMs = getTimestampMs(k.createdAt);
       if (createdMs && (now - createdMs > KEY_TTL_MS)) return;
       if (k.productId === BULK_PRODUCT_ID) stockCounts.bulk++;
@@ -803,43 +812,43 @@
     const totalCost = unitPrice * qty;
     if (currentBalance < totalCost) return showErr("Số dư không đủ (" + formatMoney(currentBalance) + " / " + formatMoney(totalCost) + ").", feedbackId);
 
-    const q = query(collection(db, COL_KEYS), where("productId", "==", productId), where("sold", "==", false));
-    const snap = await getDocs(q);
+    const keysSnap = await get(ref(db, PATH_KEYS));
     const now = Date.now();
-    const availableDocs = [];
-    snap.forEach(function (d) {
-      const createdMs = getTimestampMs(d.data().createdAt);
-      if (!createdMs || (now - createdMs <= KEY_TTL_MS)) availableDocs.push(d);
+    const availableItems = snapToArray(keysSnap).filter(function (k) {
+      if (k.sold || k.productId !== productId) return false;
+      const createdMs = getTimestampMs(k.createdAt);
+      return !createdMs || (now - createdMs <= KEY_TTL_MS);
     });
-    if (availableDocs.length < qty) return showErr("Kho không đủ hàng (chỉ còn " + availableDocs.length + " key).", feedbackId);
+    if (availableItems.length < qty) return showErr("Kho không đủ hàng (chỉ còn " + availableItems.length + " key).", feedbackId);
 
-    const pickedDocs = availableDocs.slice(0, qty);
-    const pickedCodes = pickedDocs.map(function (d) { return d.data().code; });
+    const pickedItems = availableItems.slice(0, qty);
+    const pickedCodes = pickedItems.map(function (k) { return k.code; });
 
     try {
-      await runTransaction(db, async function (tx) {
-        const userRef = doc(db, COL_USERS, currentUser.uid);
-        const userSnap = await tx.get(userRef);
-        const bal = Number(userSnap.data().balance || 0);
-        if (bal < totalCost) throw new Error("Số dư không đủ.");
-        for (const kDoc of pickedDocs) {
-          const freshKey = await tx.get(kDoc.ref);
-          if (!freshKey.exists() || freshKey.data().sold) throw new Error("Key vừa có người khác mua, vui lòng thử lại!");
-          tx.update(kDoc.ref, { sold: true, soldTo: currentUser.uid, soldAt: serverTimestamp() });
-        }
-        tx.update(userRef, { balance: bal - totalCost });
+      const txResult = await runTransaction(ref(db, PATH_USERS + "/" + currentUser.uid + "/balance"), function (bal) {
+        const cur = Number(bal || 0);
+        if (cur < totalCost) return;
+        return cur - totalCost;
       });
+      if (!txResult.committed) return showErr("Số dư không đủ để hoàn tất giao dịch.", feedbackId);
+
+      for (const item of pickedItems) {
+        await update(ref(db, PATH_KEYS + "/" + item.id), {
+          sold: true, soldTo: currentUser.uid, soldAt: Date.now()
+        });
+      }
 
       const joinedKeys = pickedCodes.join("\n");
-      await addDoc(collection(db, COL_ORDERS), {
+      const nowMs = Date.now();
+      await push(ref(db, PATH_ORDERS), {
         uid: currentUser.uid, username: currentDisplayName, productId: productId,
-        productName: productName, qty: qty, totalPrice: totalCost, keysText: joinedKeys, createdAt: serverTimestamp()
+        productName: productName, qty: qty, totalPrice: totalCost, keysText: joinedKeys, createdAt: nowMs
       });
-      await addDoc(collection(db, COL_BALANCE_LOGS), {
-        uid: currentUser.uid, amount: -totalCost, reason: "Mua " + qty + " key (" + productName + ")", createdAt: serverTimestamp()
+      await push(ref(db, PATH_BALANCE_LOGS + "/" + currentUser.uid), {
+        uid: currentUser.uid, amount: -totalCost, reason: "Mua " + qty + " key (" + productName + ")", createdAt: nowMs
       });
 
-      openKeyModal(productName + " (x" + qty + ")", joinedKeys, new Date().toLocaleString("vi-VN"));
+      openKeyModal(productName + " (x" + qty + ")", joinedKeys, new Date(nowMs).toLocaleString("vi-VN"));
       await refreshAllData();
     } catch (e) {
       showErr("Giao dịch thất bại: " + e.message, feedbackId);
@@ -865,13 +874,13 @@
     await executePurchase({ productId: CTV_PRODUCT_ID, productName: "Key CTV (330đ)", unitPrice: CTV_UNIT_PRICE, qty: qty, feedbackId: "ctvBuyFeedback" });
   };
   async function loadUserOrdersAndStats() {
-    const ordSnap = await getDocs(collection(db, COL_ORDERS));
+    const ordSnap = await get(ref(db, PATH_ORDERS));
+    const allOrders = snapToArray(ordSnap);
     const myOrders = [];
     const userTotals = {};
     let mySpent = 0, myKeys = 0;
 
-    ordSnap.forEach(function (d) {
-      const o = d.data();
+    allOrders.forEach(function (o) {
       const uname = o.username || "Ẩn danh";
       const q = Number(o.qty || 1);
       const spent = Number(o.totalPrice || 0);
@@ -879,7 +888,7 @@
       userTotals[uname].totalKeys += q;
       userTotals[uname].totalSpent += spent;
       if (currentUser && o.uid === currentUser.uid) {
-        myOrders.push({ id: d.id, ...o });
+        myOrders.push(o);
         mySpent += spent; myKeys += q;
       }
     });
@@ -905,9 +914,8 @@
 
   async function loadBalanceHistory() {
     if (!currentUser) return;
-    const snap = await getDocs(query(collection(db, COL_BALANCE_LOGS), where("uid", "==", currentUser.uid)));
-    const logs = [];
-    snap.forEach(function (d) { logs.push(d.data()); });
+    const snap = await get(ref(db, PATH_BALANCE_LOGS + "/" + currentUser.uid));
+    const logs = snapToArray(snap);
     logs.sort(function (a, b) { return (getTimestampMs(b.createdAt) || 0) - (getTimestampMs(a.createdAt) || 0); });
     const el = document.getElementById("balanceHistoryList");
     el.innerHTML = !logs.length ? "<div style='color:#94a3b8; font-size:13px;'>Chưa có biến động số dư.</div>" : logs.map(function (l) {
@@ -920,23 +928,22 @@
     const raw = String(identifier || "").trim();
     if (!raw) return null;
     const emailCandidate = toAuthEmail(raw);
-    const snap = await getDocs(collection(db, COL_USERS));
-    let found = null;
-    snap.forEach(function (d) {
-      const u = d.data();
-      if (d.id === raw || u.uid === raw || u.email === emailCandidate || (u.username && u.username.toLowerCase() === raw.toLowerCase())) {
-        found = { ref: d.ref, id: d.id, data: u };
+    const snap = await get(ref(db, PATH_USERS));
+    const users = snapToArray(snap);
+    for (const u of users) {
+      if (u.id === raw || u.uid === raw || u.email === emailCandidate || (u.username && u.username.toLowerCase() === raw.toLowerCase())) {
+        return { path: PATH_USERS + "/" + u.id, id: u.id, data: u };
       }
-    });
-    return found;
+    }
+    return null;
   }
 
   async function loadAdminUsersLists() {
     if (!isAdmin()) return;
-    const snap = await getDocs(collection(db, COL_USERS));
+    const snap = await get(ref(db, PATH_USERS));
+    const users = snapToArray(snap);
     const admins = [], ctvs = [];
-    snap.forEach(function (d) {
-      const u = d.data();
+    users.forEach(function (u) {
       if (u.isAdmin || u.email === ROOT_ADMIN_EMAIL) admins.push(u.username || u.email);
       if (u.isCtv) ctvs.push(u.username || u.email);
     });
@@ -949,7 +956,7 @@
     const userObj = await findUserDocByIdentifier(document.getElementById("adminRoleTargetInput").value);
     if (!userObj) return showErr("Không tìm thấy người dùng này.", "adminRoleFeedback");
     if (!grant && userObj.data.email === ROOT_ADMIN_EMAIL) return showErr("Không thể xóa quyền của Admin gốc!", "adminRoleFeedback");
-    await updateDoc(userObj.ref, { isAdmin: grant });
+    await update(ref(db, userObj.path), { isAdmin: grant });
     showMsg((grant ? "Đã cấp" : "Đã gỡ") + " quyền Admin cho " + (userObj.data.username || userObj.data.email), "adminRoleFeedback");
     await loadAdminUsersLists();
   };
@@ -958,7 +965,7 @@
     if (!isAdmin()) return; clearInlineFeedbacks();
     const userObj = await findUserDocByIdentifier(document.getElementById("ctvTargetInput").value);
     if (!userObj) return showErr("Không tìm thấy người dùng này.", "adminCtvFeedback");
-    await updateDoc(userObj.ref, { isCtv: grant });
+    await update(ref(db, userObj.path), { isCtv: grant });
     showMsg((grant ? "Đã thêm" : "Đã gỡ") + " quyền CTV cho " + (userObj.data.username || userObj.data.email), "adminCtvFeedback");
     await loadAdminUsersLists();
   };
@@ -969,8 +976,13 @@
     if (!amount || amount <= 0) return showErr("Số tiền cộng phải lớn hơn 0.", "adminBalFeedback");
     const userObj = await findUserDocByIdentifier(document.getElementById("targetUserInput").value);
     if (!userObj) return showErr("Không tìm thấy người dùng.", "adminBalFeedback");
-    await updateDoc(userObj.ref, { balance: Number(userObj.data.balance || 0) + amount, totalDeposited: Number(userObj.data.totalDeposited || 0) + amount });
-    await addDoc(collection(db, COL_BALANCE_LOGS), { uid: userObj.id, amount: amount, reason: "Admin cộng số dư", createdAt: serverTimestamp() });
+    await update(ref(db, userObj.path), {
+      balance: Number(userObj.data.balance || 0) + amount,
+      totalDeposited: Number(userObj.data.totalDeposited || 0) + amount
+    });
+    await push(ref(db, PATH_BALANCE_LOGS + "/" + userObj.id), {
+      uid: userObj.id, amount: amount, reason: "Admin cộng số dư", createdAt: Date.now()
+    });
     showMsg("Đã cộng " + formatMoney(amount) + " cho " + (userObj.data.username || userObj.data.email), "adminBalFeedback");
     await refreshAllData();
   };
@@ -979,8 +991,11 @@
     if (!isAdmin()) return; clearInlineFeedbacks();
     const userObj = await findUserDocByIdentifier(document.getElementById("targetUserInput").value);
     if (!userObj) return showErr("Không tìm thấy người dùng.", "adminBalFeedback");
-    await updateDoc(userObj.ref, { balance: 0 });
-    await addDoc(collection(db, COL_BALANCE_LOGS), { uid: userObj.id, amount: -Number(userObj.data.balance || 0), reason: "Admin đặt lại số dư về 0đ", createdAt: serverTimestamp() });
+    const prevBal = Number(userObj.data.balance || 0);
+    await update(ref(db, userObj.path), { balance: 0 });
+    await push(ref(db, PATH_BALANCE_LOGS + "/" + userObj.id), {
+      uid: userObj.id, amount: -prevBal, reason: "Admin đặt lại số dư về 0đ", createdAt: Date.now()
+    });
     showMsg("Đã đặt số dư của " + (userObj.data.username || userObj.data.email) + " về 0đ.", "adminBalFeedback");
     await refreshAllData();
   };
@@ -991,7 +1006,7 @@
     if (!userObj) return showErr("Không tìm thấy người dùng.", "adminBalFeedback");
     if (userObj.data.email === ROOT_ADMIN_EMAIL) return showErr("Không thể xóa Admin gốc!", "adminBalFeedback");
     if (!confirm("Xóa dữ liệu người dùng " + (userObj.data.username || userObj.data.email) + "?")) return;
-    await deleteDoc(userObj.ref);
+    await remove(ref(db, userObj.path));
     showMsg("Đã xóa hồ sơ người dùng khỏi hệ thống.", "adminBalFeedback");
     await loadAdminUsersLists();
   };
@@ -1001,7 +1016,7 @@
     const name = document.getElementById("prodName").value.trim();
     const price = Number(document.getElementById("prodPrice").value || 0);
     if (!name || price <= 0) return showErr("Nhập tên gói và giá bán hợp lệ.", "adminProdFeedback");
-    await addDoc(collection(db, COL_PRODUCTS), { name: name, price: price, createdAt: serverTimestamp() });
+    await push(ref(db, PATH_PRODUCTS), { name: name, price: price, createdAt: Date.now() });
     document.getElementById("prodName").value = ""; document.getElementById("prodPrice").value = "";
     showMsg("Đã thêm gói: " + name, "adminProdFeedback");
     await loadProductsAndStocks();
@@ -1019,7 +1034,7 @@
     if (!isAdmin()) return;
     const pid = document.getElementById("keyProdSelect").value;
     if (!pid || !confirm("Xóa gói hàng đang chọn?")) return;
-    await deleteDoc(doc(db, COL_PRODUCTS, pid));
+    await remove(ref(db, PATH_PRODUCTS + "/" + pid));
     await loadProductsAndStocks(); await loadAdminKeys();
   };
 
@@ -1027,8 +1042,9 @@
     if (!isAdmin()) return; clearInlineFeedbacks();
     const lines = formatKeysOnePerLine(rawText).split("\n").filter(Boolean);
     if (!lines.length) return showErr("Vui lòng nhập ít nhất 1 key.", feedbackId);
+    const nowMs = Date.now();
     for (const code of lines) {
-      await addDoc(collection(db, COL_KEYS), { productId: productId, code: code, sold: false, createdAt: serverTimestamp() });
+      await push(ref(db, PATH_KEYS), { productId: productId, code: code, sold: false, createdAt: nowMs });
     }
     document.getElementById(textareaId).value = "";
     showMsg("Đã nhập thành công " + lines.length + " key vào kho!", feedbackId);
@@ -1050,10 +1066,11 @@
   window.loadAdminKeys = async function () {
     if (!isAdmin()) return;
     const selectedPkgId = document.getElementById("keyProdSelect") ? document.getElementById("keyProdSelect").value : "";
-    const snap = await getDocs(query(collection(db, COL_KEYS), where("sold", "==", false)));
+    const snap = await get(ref(db, PATH_KEYS));
+    const allKeys = snapToArray(snap);
     adminKeysCache = { pkg: [], bulk: [], ctv: [] };
-    snap.forEach(function (d) {
-      const k = { id: d.id, ...d.data() };
+    allKeys.forEach(function (k) {
+      if (k.sold) return;
       if (k.productId === BULK_PRODUCT_ID) adminKeysCache.bulk.push(k);
       else if (k.productId === CTV_PRODUCT_ID) adminKeysCache.ctv.push(k);
       else if (k.productId === selectedPkgId) adminKeysCache.pkg.push(k);
@@ -1077,7 +1094,7 @@
     const checked = Array.from(document.querySelectorAll(".key-chk-" + type + ":checked"));
     if (!checked.length) return alert("Chưa chọn key nào để xóa.");
     if (!confirm("Xóa " + checked.length + " key đã chọn?")) return;
-    for (const cb of checked) await deleteDoc(doc(db, COL_KEYS, cb.value));
+    for (const cb of checked) await remove(ref(db, PATH_KEYS + "/" + cb.value));
     await loadProductsAndStocks(); await loadAdminKeys();
   };
 
