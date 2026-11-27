@@ -84,7 +84,8 @@
     .rank-buyer { font-weight: 700; color: #f8fafc; word-break: break-all; }
     .ctv-chip { display: inline-flex; align-items: center; gap: 6px; background: #131722; border: 1px solid #2a3146; border-radius: 999px; padding: 4px 10px; margin: 4px 4px 0 0; font-size: 12px; }
   </style>
-</head><body>
+</head>
+<body>
 <div class="wrap">
 
   <div id="lagNoticeBox" class="lag-notice" style="display:none;">
@@ -135,7 +136,9 @@
       </div>
       <div id="passFeedback" class="err"></div>
     </div>
-  </div><div id="globalErrBox" class="err"></div>
+  </div>
+
+  <div id="globalErrBox" class="err"></div>
 
   <div id="authBox" class="card">
     <h2>⚡ TDAT KEY - Đăng nhập / Đăng ký (ADMIN LÀ TDAT)</h2>
@@ -167,7 +170,6 @@
         <button class="dark" onclick="logoutUser()">🚪 Đăng Xuất</button>
       </div>
     </div>
-
     <div class="stats-grid">
       <div class="stat-box">
         <div class="stat-label">💰 Số dư khả dụng</div>
@@ -244,7 +246,6 @@
         <div id="ctvBuyFeedback" class="err"></div>
       </div>
     </div>
-
     <div id="tabPanel_keys" style="display:none;">
       <div class="card">
         <h2>📋 Danh Sách Key Của Tôi</h2>
@@ -264,7 +265,9 @@
         <h2>🏆 Bảng Xếp Hạng Đua Top Mua Key</h2>
         <div id="leaderboardList">Đang tải bảng xếp hạng...</div>
       </div>
-    </div><div id="tabPanel_admin" style="display:none;">
+    </div>
+
+    <div id="tabPanel_admin" style="display:none;">
       <div class="card">
         <h2>Quản lý Admin • ADMIN LÀ TDAT</h2>
         <p style="font-size:12.5px; color:#94a3b8; margin-top:0;">Key chưa bán tự động xóa sau 30 ngày kể từ lúc nhập kho.</p>
@@ -364,7 +367,8 @@
       </div>
     </div>
   </div>
-</div><script>
+</div>
+<script>
   const LAG_SNOOZE_KEY = "tdat_lag_notice_until_2h";
   const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
   let latestModalKeyText = "";
@@ -442,7 +446,6 @@
 
   initLagNotice();
 </script>
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
@@ -455,14 +458,14 @@
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyCAnRKLjXeZPg-IZdfpOrKyUc3h7pxBLO8",
-    authDomain: "tdat-9beb4.firebaseapp.com",
-    databaseURL: "https://tdat-9beb4-default-rtdb.firebaseio.com",
-    projectId: "tdat-9beb4",
-    storageBucket: "tdat-9beb4.firebasestorage.app",
-    messagingSenderId: "247043824683",
-    appId: "1:247043824683:web:962422d56a4098f65ede6e",
-    measurementId: "G-H9KVMFNSHV"
+    apiKey: "AIzaSyCNKAN5EnqaweStbWKsR-6JISZ7qCicrPE",
+    authDomain: "tdat-91afd.firebaseapp.com",
+    databaseURL: "https://tdat-91afd-default-rtdb.firebaseio.com",
+    projectId: "tdat-91afd",
+    storageBucket: "tdat-91afd.firebasestorage.app",
+    messagingSenderId: "1075923250767",
+    appId: "1:1075923250767:web:d24226a64e1f72e11d043a",
+    measurementId: "G-LTE01R2724"
   };
 
   const ROOT_ADMIN_EMAIL = "tdat@tdat.key";
@@ -494,7 +497,9 @@
   let productsCache = [];
   let selectedProductId = "";
   let adminKeysCache = { pkg: [], bulk: [], ctv: [] };
-  let stockCounts = { pkg: {}, bulk: 0, ctv: 0 };function isRootAdmin() { return Boolean(currentUser && currentUser.email === ROOT_ADMIN_EMAIL); }
+  let stockCounts = { pkg: {}, bulk: 0, ctv: 0 };
+
+  function isRootAdmin() { return Boolean(currentUser && currentUser.email === ROOT_ADMIN_EMAIL); }
   function isAdmin() { return Boolean(currentUser && (isRootAdmin() || currentIsAdmin)); }
   function canBuyCtv() { return Boolean(isAdmin() || currentIsCtv); }
 
@@ -858,7 +863,8 @@
     const qty = parseInt(document.getElementById("ctvQtyInput").value, 10) || 0;
     if (qty < 1) return showErr("Vui lòng nhập số lượng hợp lệ.", "ctvBuyFeedback");
     await executePurchase({ productId: CTV_PRODUCT_ID, productName: "Key CTV (330đ)", unitPrice: CTV_UNIT_PRICE, qty: qty, feedbackId: "ctvBuyFeedback" });
-  };async function loadUserOrdersAndStats() {
+  };
+  async function loadUserOrdersAndStats() {
     const ordSnap = await getDocs(collection(db, COL_ORDERS));
     const myOrders = [];
     const userTotals = {};
