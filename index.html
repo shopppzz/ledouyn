@@ -141,13 +141,11 @@
   <div id="globalErrBox" class="err"></div>
 
   <div id="authBox" class="card">
-    <h2>⚡ LEDOUYN67 - Đăng nhập / Đăng ký (ADMIN LÀ LEDOUYN67)</h2>
-    <input id="emailInput" type="text" placeholder="Nhập tên tài khoản (đặt tên gì cũng được)..." />
+    <h2>⚡ LEDOUYN67 - Đăng nhập (ADMIN LÀ LEDOUYN67)</h2>
+    <div style="font-size:12px; color:#94a3b8; margin-bottom:6px;">Tài khoản do Admin cấp • Khách không tự đăng ký</div>
+    <input id="emailInput" type="text" placeholder="Nhập tên tài khoản..." />
     <input id="passInput" type="password" placeholder="Nhập mật khẩu (ít nhất 6 ký tự)..." />
-    <div style="display:flex; gap:8px;">
-      <button onclick="loginUser()">Đăng nhập</button>
-      <button class="green" onclick="registerUser()">Đăng ký</button>
-    </div>
+    <button onclick="loginUser()">Đăng nhập</button>
     <div id="authFeedback" class="err"></div>
   </div>
 
@@ -272,6 +270,15 @@
         <h2>Quản lý Admin • ADMIN LÀ LEDOUYN67</h2>
         <p style="font-size:12.5px; color:#94a3b8; margin-top:0;">Key chưa bán tự động xóa sau 30 ngày kể từ lúc nhập kho.</p>
 
+        <div class="item" style="border-color:#22c55e;">
+          <h3 style="color:#4ade80;">Tạo tài khoản cho khách / CTV (Chỉ Admin)</h3>
+          <div style="font-size:12px; color:#94a3b8; margin-bottom:4px;">Tạo tài khoản xong nhớ lưu lại tên và mật khẩu để giao cho khách:</div>
+          <input id="newAccUserInput" type="text" placeholder="Tên tài khoản mới (VD: khach01)..." />
+          <input id="newAccPassInput" type="password" placeholder="Mật khẩu tài khoản mới (tối thiểu 6 ký tự)..." />
+          <button class="green" style="margin:0;" onclick="adminCreateUserAccount()">+ Tạo tài khoản</button>
+          <div id="adminCreateAccFeedback" class="err"></div>
+        </div>
+
         <div id="adminRoleSection" class="item" style="border-color:#a855f7;">
           <h3 style="color:#c084fc;">Phân quyền Admin</h3>
           <div style="font-size:12px; color:#94a3b8; margin-bottom:4px;">Nhập tên tài khoản, Email hoặc UID để cấp hoặc xóa quyền Admin:</div>
@@ -311,7 +318,6 @@
           </div>
           <div id="adminBalFeedback" class="err"></div>
         </div>
-
         <h3 style="margin-top:16px;">1. Tạo gói Key mới</h3>
         <input id="prodName" placeholder="Tên gói (VD: 1 Ngày)" />
         <input id="prodPrice" type="number" placeholder="Giá bán VNĐ (VD: 7000)" />
@@ -485,6 +491,8 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const secondaryApp = initializeApp(firebaseConfig, "SecondaryAdminApp");
+  const secondaryAuth = getAuth(secondaryApp);
   const db = getDatabase(app);
 
   let currentUser = null;
@@ -608,29 +616,35 @@
     return arr;
   }
 
-  window.registerUser = async function () {
+  window.adminCreateUserAccount = async function () {
+    if (!isAdmin()) return;
     clearInlineFeedbacks();
-    const rawUser = document.getElementById("emailInput").value.trim();
-    const pass = document.getElementById("passInput").value;
+    const rawUser = document.getElementById("newAccUserInput").value.trim();
+    const pass = document.getElementById("newAccPassInput").value;
     const email = toAuthEmail(rawUser);
     const username = getCleanUsername(rawUser, email);
 
-    if (!email) return showErr("Vui lòng nhập tên tài khoản.", "authFeedback");
-    if (!pass || pass.length < 6) return showErr("Mật khẩu phải có ít nhất 6 ký tự.", "authFeedback");
+    if (!email) return showErr("Vui lòng nhập tên tài khoản mới.", "adminCreateAccFeedback");
+    if (!pass || pass.length < 6) return showErr("Mật khẩu phải có ít nhất 6 ký tự.", "adminCreateAccFeedback");
 
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      const cred = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
       const isRoot = (email === ROOT_ADMIN_EMAIL);
       await set(ref(db, PATH_USERS + "/" + cred.user.uid), {
         uid: cred.user.uid, username: username, email: email,
         balance: 0, totalDeposited: 0, isAdmin: isRoot, isCtv: false, createdAt: Date.now()
       });
+      await signOut(secondaryAuth);
+      document.getElementById("newAccUserInput").value = "";
+      document.getElementById("newAccPassInput").value = "";
+      showMsg("Đã tạo tài khoản: " + username + " (" + email + ")", "adminCreateAccFeedback");
+      await loadAdminUsersLists();
     } catch (e) {
-      let msg = e.message || "Đăng ký thất bại.";
+      let msg = e.message || "Tạo tài khoản thất bại.";
       if (e.code === "auth/email-already-in-use") msg = "Tên tài khoản này đã tồn tại!";
       else if (e.code === "auth/weak-password") msg = "Mật khẩu quá yếu (tối thiểu 6 ký tự).";
       else if (e.code === "auth/operation-not-allowed") msg = "Chưa bật Email/Password trong Firebase Authentication!";
-      showErr("Lỗi đăng ký: " + msg, "authFeedback");
+      showErr("Lỗi tạo tài khoản: " + msg, "adminCreateAccFeedback");
     }
   };
 
