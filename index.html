@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>VELOX KEY - Hệ Thống Key Tự Động</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { margin: 0; background: #090b10; color: #f8fafc; padding: 12px; }
+    .wrap { max-width: 680px; margin: 0 auto; }
+    .card { background: #131722; border: 1px solid #22283a; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+    h1, h2, h3 { margin: 0 0 10px; font-size: 16px; color: #f8fafc; }
+    input, textarea, select, button { width: 100%; padding: 10px 12px; margin: 6px 0; border-radius: 10px; border: 1px solid #2a3146; font-size: 14px; }
+    input, textarea, select { background: #0c0f17; color: #fff; }
+    button { background: #2563eb; color: #fff; font-weight: 700; border: none; cursor: pointer; }
+    button:hover { opacity: 0.92; }
+    button.green { background: #16a34a; }
+    button.pink { background: #e11d48; }
+    button.red { background: #dc2626; }
+    button.amber { background: #d97706; }
+    button.purple { background: #7c3aed; }
+    button.dark { background: #1e2433; border: 1px solid #2e364d; color: #e2e8f0; }
+
+    .profile-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .avatar-circle { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #38bdf8); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: #fff; flex-shrink: 0; }
+    .profile-name { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .role-badge { background: rgba(245, 158, 11, 0.16); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+    .ctv-badge { background: rgba(56, 189, 248, 0.16); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+    .profile-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    .header-btns { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+    .header-btns::-webkit-scrollbar { display: none; }
+    .header-btns button { width: auto; flex: 1; white-space: nowrap; margin: 0; padding: 8px 10px; font-size: 12.5px; border-radius: 9px; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px; }
+    .stat-box { background: #131722; border: 1px solid #22283a; border-radius: 12px; padding: 12px; position: relative; min-width: 0; }
+    .stat-label { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+    .stat-val { font-size: 18px; font-weight: 800; margin-top: 6px; overflow-wrap: anywhere; }
+    .c-green { color: #22c55e; }
+    .c-yellow { color: #facc15; }
+    .c-pink { color: #fb7185; }
+    .c-blue { color: #38bdf8; }
+    .mini-nap-btn { position: absolute; right: 10px; bottom: 10px; width: auto; margin: 0; padding: 5px 9px; font-size: 11px; border-radius: 8px; background: #1e293b; border: 1px solid #334155; color: #e2e8f0; }
+
+    .tabs-bar { display: flex; gap: 16px; overflow-x: auto; border-bottom: 1px solid #22283a; padding-bottom: 8px; margin-bottom: 12px; scrollbar-width: none; }
+    .tabs-bar::-webkit-scrollbar { display: none; }
+    .tab-btn { background: none; border: none; color: #94a3b8; font-size: 13.5px; font-weight: 700; padding: 6px 2px; margin: 0; width: auto; white-space: nowrap; border-radius: 0; border-bottom: 2px solid transparent; }
+    .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; }
+
+    .pkg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    @media (max-width: 380px) { .pkg-grid { grid-template-columns: repeat(2, 1fr); } }
+    .pkg-tile { background: #191e2c; border: 1.5px solid #2a3146; border-radius: 12px; padding: 10px 6px; text-align: center; cursor: pointer; transition: 0.15s; }
+    .pkg-tile.selected { background: rgba(56, 189, 248, 0.16); border-color: #38bdf8; }
+    .pkg-tile-name { font-size: 13px; font-weight: 700; color: #f8fafc; line-height: 1.3; }
+    .pkg-tile-price { font-size: 13px; font-weight: 800; color: #38bdf8; margin-top: 4px; }
+    .pkg-tile-stock { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+
+    .qty-row { display: flex; align-items: center; gap: 8px; }
+    .qty-row button { width: 42px; height: 40px; margin: 0; padding: 0; font-size: 18px; flex-shrink: 0; }
+    .qty-row input { text-align: center; font-weight: 800; font-size: 15px; height: 40px; margin: 0; }
+
+    .msg { padding: 10px; border-radius: 10px; background: #14532d; color: #dcfce7; margin-top: 8px; display: none; font-size: 13px; }
+    .err { padding: 10px; border-radius: 10px; background: #7f1d1d; color: #fee2e2; margin-top: 8px; display: none; font-size: 13px; }
+    .item { background: #0c0f17; border: 1px solid #22283a; border-radius: 10px; padding: 12px; margin-top: 8px; }
+    .key-box { background: #06080d; border: 1px dashed #22c55e; padding: 10px; border-radius: 8px; color: #4ade80; font-weight: 700; word-break: break-all; margin-top: 8px; font-family: monospace; white-space: pre-line; line-height: 1.55; font-size: 13px; }
+    .key-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: #131722; border: 1px solid #22283a; border-radius: 8px; padding: 8px 10px; margin-top: 6px; }
+    .key-left { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+    .key-check { width: auto; margin: 0; }
+    .key-code { font-family: monospace; color: #4ade80; word-break: break-all; font-size: 13px; }
+    .key-age { font-size: 11px; color: #94a3b8; }
+    .toolbar { display: flex; gap: 6px; margin: 8px 0; flex-wrap: wrap; }
+    .toolbar button { width: auto; margin: 0; padding: 7px 10px; font-size: 12px; }
+
+    .lag-notice { background: #451a03; border: 1px solid #f59e0b; color: #fef3c7; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+    .lag-free-link { display: inline-block; margin-top: 6px; color: #38bdf8; font-weight: 700; font-size: 13px; text-decoration: underline; word-break: break-all; }
+    .lag-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .lag-actions button { margin: 0; padding: 7px 10px; font-size: 12px; }
+
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.85); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 9999; }
+    .modal-card { width: 100%; max-width: 460px; background: #131722; border: 1px solid #38bdf8; border-radius: 14px; padding: 16px; }
+    .modal-key-box { background: #06080d; border: 1px dashed #4ade80; border-radius: 10px; padding: 12px; color: #4ade80; font-family: monospace; font-size: 13.5px; font-weight: 700; word-break: break-all; white-space: pre-line; line-height: 1.55; max-height: 230px; overflow-y: auto; margin: 10px 0; }
+    .rank-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px; border-bottom: 1px solid #22283a; font-size: 13.5px; }
+    .rank-row:last-child { border-bottom: none; }
+    .rank-buyer { font-weight: 700; color: #f8fafc; word-break: break-all; }
+    .ctv-chip { display: inline-flex; align-items: center; gap: 6px; background: #131722; border: 1px solid #2a3146; border-radius: 999px; padding: 4px 10px; margin: 4px 4px 0 0; font-size: 12px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="lagNoticeBox" class="lag-notice" style="display:none;">
+    <div style="font-weight:700; color:#fbbf24; font-size:14px;">⚠️ Thông báo hệ thống VELOX</div>
+    <div style="font-size:13px; margin-top:3px;">Kho key độc lập, khi nào thấy báo còn hàng mới tiến hành mua.</div>
+    <div>
+      <a class="lag-free-link" href="https://zalo.me" target="_blank" rel="noopener noreferrer">
+        🎁 Kênh hỗ trợ & thông báo: bấm vào đây
+      </a>
+    </div>
+    <div class="lag-actions">
+      <button class="dark" onclick="closeLagNotice()">Đóng</button>
+      <button onclick="snoozeLagNotice2h()">Đóng 2h</button>
+    </div>
+  </div>
+
+  <div id="keyModalBackdrop" class="modal-backdrop">
+    <div class="modal-card">
+      <div style="color:#4ade80; font-size:17px; font-weight:800;">🎉 Mua Key Thành Công!</div>
+      <div id="keyModalMeta" style="color:#94a3b8; font-size:12.5px; margin-top:4px;"></div>
+      <div id="keyModalCode" class="modal-key-box"></div>
+      <div style="display:flex; gap:8px;">
+        <button class="green" style="margin:0;" onclick="copyModalKey()">📋 Copy Key</button>
+        <button class="dark" style="margin:0;" onclick="closeKeyModal()">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="napModalBackdrop" class="modal-backdrop">
+    <div class="modal-card">
+      <div style="color:#f87171; font-size:17px; font-weight:800;">🚫 Thông báo nạp số dư</div>
+      <div style="color:#fecaca; font-size:13.5px; line-height:1.5; margin:10px 0;">
+        Vui lòng liên hệ Admin <b style="color:#38bdf8;">VELOX KEY</b> để nạp số dư vào hệ thống này.
+      </div>
+      <button class="dark" style="margin:0;" onclick="closeNapModal()">Đóng</button>
+    </div>
+  </div>
+
+  <div id="passModalBackdrop" class="modal-backdrop">
+    <div class="modal-card">
+      <div style="color:#38bdf8; font-size:17px; font-weight:800;">🔒 Đổi Mật Khẩu</div>
+      <div style="font-size:12px; color:#94a3b8; margin-top:4px;">Nhập mật khẩu cũ để xác nhận trước khi đổi mật khẩu mới:</div>
+      <input id="oldPassInput" type="password" placeholder="Nhập mật khẩu cũ..." />
+      <input id="newPassInput" type="password" placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)..." />
+      <div style="display:flex; gap:8px; margin-top:6px;">
+        <button class="green" style="margin:0;" onclick="changeUserPassword()">Xác nhận đổi mật khẩu</button>
+        <button class="dark" style="margin:0;" onclick="closePassModal()">Hủy</button>
+      </div>
+      <div id="passFeedback" class="err"></div>
+    </div>
+  </div>
+
+  <div id="globalErrBox" class="err"></div>
+
+  <div id="authBox" class="card">
+    <h2>⚡ VELOX KEY - Đăng nhập / Đăng ký</h2>
+    <input id="emailInput" type="text" placeholder="Nhập tên tài khoản (đặt tên gì cũng được)..." />
+    <input id="passInput" type="password" placeholder="Nhập mật khẩu (ít nhất 6 ký tự)..." />
+    <div style="display:flex; gap:8px;">
+      <button onclick="loginUser()">Đăng nhập</button>
+      <button class="green" onclick="registerUser()">Đăng ký</button>
+    </div>
+    <div id="authFeedback" class="err"></div>
+  </div>
+
+  <div id="shopArea">
+    <div class="card">
+      <div class="profile-top">
+        <div id="avatarCircle" class="avatar-circle">V</div>
+        <div>
+          <div class="profile-name">
+            <span id="profileDisplayName">Khách</span>
+            <span id="profileRoleBadge" class="role-badge">Chưa đăng nhập</span>
+            <span id="profileCtvBadge" class="ctv-badge" style="display:none;">CTV</span>
+          </div>
+          <div id="profileEmailSub" class="profile-sub">Xem gói key tự do • Đăng nhập để mua hoặc quản lý</div>
+        </div>
+      </div>
+      <div class="header-btns">
+        <button class="green" onclick="openNapModal()">💳 Nạp Tiền</button>
+        <button class="dark" onclick="openPassModal()">🔒 Đổi Mật Khẩu</button>
+        <button class="dark" onclick="logoutUser()">🚪 Đăng Xuất</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-label">💰 Số dư khả dụng</div>
+        <div id="statBalance" class="stat-val c-green">0đ</div>
+        <button class="mini-nap-btn" onclick="openNapModal()">+ Nạp</button>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">🛍️ Tổng tiền đã mua</div>
+        <div id="statTotalSpent" class="stat-val c-yellow">0đ</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">🔑 Tổng key đã mua</div>
+        <div id="statTotalKeys" class="stat-val c-pink">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">💳 Tổng tiền đã nạp</div>
+        <div id="statTotalDeposited" class="stat-val c-blue">0đ</div>
+      </div>
+    </div>
+
+    <div class="tabs-bar">
+      <button id="tabBtn_buy" class="tab-btn active" onclick="switchTab('buy')">⚡ Mua Key Mới</button>
+      <button id="tabBtn_keys" class="tab-btn" onclick="switchTab('keys')">📋 Danh Sách Key Của Tôi</button>
+      <button id="tabBtn_history" class="tab-btn" onclick="switchTab('history')">🕒 Lịch Sử Biến Động Số Dư</button>
+      <button id="tabBtn_top" class="tab-btn" onclick="switchTab('top')">🏆 Bảng Xếp Hạng Đua Top</button>
+      <button id="tabBtn_admin" class="tab-btn" style="display:none;" onclick="switchTab('admin')">Quản lý Admin</button>
+    </div>
+
+    <div id="tabPanel_buy">
+      <div class="card">
+        <h2>⚡ Mua Mã Key Tự Động</h2>
+        <div style="font-size:13px; color:#cbd5e1; margin-bottom:8px;">1. Chọn Gói Key:</div>
+        <div id="pkgGridContainer" class="pkg-grid">Đang tải gói hàng...</div>
+
+        <div style="font-size:13px; color:#cbd5e1; margin-bottom:6px;">2. Số Lượng Key Muốn Mua:</div>
+        <div class="qty-row">
+          <button type="button" class="dark" onclick="stepSelectedPkgQty(-1)">-</button>
+          <input id="selectedPkgQtyInput" type="number" min="1" step="1" value="1" oninput="onSelectedPkgQtyInput()" />
+          <button type="button" class="dark" onclick="stepSelectedPkgQty(1)">+</button>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:13.5px;">
+          <span style="color:#94a3b8;">Thanh toán: <b id="selectedPkgSummary" style="color:#f8fafc;">Chưa chọn gói</b></span>
+          <b id="selectedPkgTotal" style="color:#38bdf8; font-size:16px;">0đ</b>
+        </div>
+
+        <button id="buySelectedPkgBtn" class="pink" style="margin-top:10px;" onclick="buySelectedProduct()">⚡ Mua Key Ngay</button>
+        <div id="buyPkgFeedback" class="err"></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="margin:0;">📦 Mua Tùy Chọn (400đ/key)</h2>
+          <span id="bulkStockBadge" style="font-size:12px; background:#1e293b; padding:4px 8px; border-radius:8px; color:#38bdf8;">Kho sỉ: 0 key</span>
+        </div>
+        <div style="font-size:12.5px; color:#94a3b8; margin-top:6px;">
+          Tối thiểu 20 key • Thành tiền: <b id="bulkCalcText" style="color:#38bdf8;">0đ</b>
+        </div>
+        <input id="bulkQtyInput" type="number" min="20" step="1" placeholder="Nhập số lượng key (VD: 20)" oninput="updateBulkCalc()" />
+        <button class="green" onclick="buyBulkKeys()">Mua tùy chọn</button>
+        <div id="bulkFeedback" class="err"></div>
+      </div>
+
+      <div class="card" style="border-color:#f59e0b;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <h2 style="margin:0; color:#fbbf24;">⭐ Mua Key CTV (330đ/key)</h2>
+          <span id="ctvStockBadge" style="font-size:12px; background:#451a03; border:1px solid #f59e0b; padding:4px 8px; border-radius:8px; color:#fbbf24;">Kho CTV: 0 key</span>
+        </div>
+        <div style="font-size:12.5px; color:#94a3b8; margin-top:6px;">
+          Chỉ tài khoản CTV mới mua được • Thành tiền: <b id="ctvCalcText" style="color:#fbbf24;">0đ</b>
+        </div>
+        <input id="ctvQtyInput" type="number" min="1" step="1" placeholder="Nhập số lượng key CTV muốn mua..." oninput="updateCtvCalc()" />
+        <button id="buyCtvBtn" class="amber" onclick="buyCtvKeys()">Mua Key CTV (330đ/key)</button>
+        <div id="ctvBuyFeedback" class="err"></div>
+      </div>
+    </div>
+
+    <div id="tabPanel_keys" style="display:none;">
+      <div class="card">
+        <h2>📋 Danh Sách Key Của Tôi</h2>
+        <div id="ordersList">Vui lòng đăng nhập để xem key đã mua.</div>
+      </div>
+    </div>
+
+    <div id="tabPanel_history" style="display:none;">
+      <div class="card">
+        <h2>🕒 Lịch Sử Biến Động Số Dư</h2>
+        <div id="balanceHistoryList">Vui lòng đăng nhập để xem lịch sử biến động số dư.</div>
+      </div>
+    </div>
+
+    <div id="tabPanel_top" style="display:none;">
+      <div class="card">
+        <h2>🏆 Bảng Xếp Hạng Đua Top Mua Key</h2>
+        <div id="leaderboardList">Đang tải bảng xếp hạng...</div>
+      </div>
+    </div>
+
+    <div id="tabPanel_admin" style="display:none;">
+      <div class="card">
+        <h2>Quản lý Admin (Kho Key Độc Lập)</h2>
+        <p style="font-size:12.5px; color:#94a3b8; margin-top:0;">Key chưa bán tự động xóa sau 30 ngày kể từ lúc nhập kho.</p>
+
+        <div id="adminRoleSection" class="item" style="border-color:#a855f7;">
+          <h3 style="color:#c084fc;">Phân quyền Admin</h3>
+          <div style="font-size:12px; color:#94a3b8; margin-bottom:4px;">Nhập tên tài khoản, Email hoặc UID để cấp hoặc xóa quyền Admin:</div>
+          <input id="adminRoleTargetInput" type="text" placeholder="VD: tenban hoặc ban@velox.key" />
+          <div style="display:flex; gap:8px;">
+            <button class="purple" style="margin:0;" onclick="adminSetAdminRole(true)">+ Cấp quyền Admin</button>
+            <button class="red" style="margin:0;" onclick="adminSetAdminRole(false)">Xóa quyền Admin</button>
+          </div>
+          <div style="font-size:12px; color:#94a3b8; margin-top:10px;">Danh sách Admin hiện tại:</div>
+          <div id="adminListBox" style="margin-top:4px; font-size:12.5px; color:#cbd5e1;">Đang tải...</div>
+          <div id="adminRoleFeedback" class="err"></div>
+        </div>
+
+        <div class="item" style="border-color:#f59e0b;">
+          <h3 style="color:#fbbf24;">Quản lý Cộng Tác Viên (CTV)</h3>
+          <div style="font-size:12px; color:#94a3b8; margin-bottom:4px;">Nhập tên tài khoản, Email hoặc UID để thêm hoặc gỡ CTV:</div>
+          <input id="ctvTargetInput" type="text" placeholder="VD: tenctv hoặc ctv@velox.key" />
+          <div style="display:flex; gap:8px;">
+            <button class="amber" style="margin:0;" onclick="adminSetCtvRole(true)">+ Thêm làm CTV</button>
+            <button class="dark" style="margin:0;" onclick="adminSetCtvRole(false)">Gỡ quyền CTV</button>
+          </div>
+          <div style="font-size:12px; color:#94a3b8; margin-top:10px;">Danh sách CTV hiện tại:</div>
+          <div id="ctvListBox" style="margin-top:4px; font-size:12.5px; color:#cbd5e1;">Đang tải...</div>
+          <div id="adminCtvFeedback" class="err"></div>
+        </div>
+
+        <div class="item" style="border-color:#38bdf8;">
+          <h3 style="color:#38bdf8;">Quản lý số dư & người dùng</h3>
+          <div style="font-size:12px; color:#94a3b8; margin-bottom:4px;">Nhập tên tài khoản, Email hoặc UID người cần xử lý:</div>
+          <input id="targetUserInput" type="text" placeholder="VD: tenkhach hoặc khach@velox.key" />
+          <div style="font-size:12px; color:#94a3b8; margin-bottom:4px;">Nhập số tiền cộng (VNĐ):</div>
+          <input id="addAmountInput" type="number" step="1" placeholder="VD: 50000" />
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="green" style="margin:0; flex:1;" onclick="adminAddBalance()">Cộng số dư</button>
+            <button class="dark" style="margin:0; flex:1;" onclick="adminResetBalance()">Xóa số dư (0đ)</button>
+            <button class="red" style="margin:0; flex:1;" onclick="adminDeleteUser()">Xóa người dùng</button>
+          </div>
+          <div id="adminBalFeedback" class="err"></div>
+        </div>
+
+        <h3 style="margin-top:16px;">1. Tạo gói Key mới</h3>
+        <input id="prodName" placeholder="Tên gói (VD: 1 Ngày)" />
+        <input id="prodPrice" type="number" placeholder="Giá bán VNĐ (VD: 7000)" />
+        <button class="green" onclick="addProduct()">+ Thêm gói hàng</button>
+        <div id="adminProdFeedback" class="err"></div>
+
+        <h3 style="margin-top:16px;">2. Nhập kho Key theo gói (mỗi dòng 1 key)</h3>
+        <div style="display:flex; gap:8px;">
+          <select id="keyProdSelect" onchange="loadAdminKeys()"></select>
+          <button class="red" style="width:auto; white-space:nowrap;" onclick="deleteCurrentSelectedProduct()">Xóa gói</button>
+        </div>
+        <textarea id="keysTextarea" rows="4" placeholder="VX-KEY-111&#10;VX-KEY-222"></textarea>
+        <button onclick="importKeys()">Nhập Key vào kho gói</button>
+        <div id="adminImportFeedback" class="err"></div>
+
+        <h3 style="margin-top:16px;">3. Lọc & xóa key chưa bán trong gói</h3>
+        <input id="pkgSearchInput" type="text" placeholder="Tìm nhanh mã key..." oninput="filterAdminKeys('pkg')" />
+        <div class="toolbar">
+          <button class="dark" onclick="toggleSelectAll('pkg', true)">Chọn hết</button>
+          <button class="dark" onclick="toggleSelectAll('pkg', false)">Bỏ chọn</button>
+          <button class="red" onclick="deleteSelectedKeys('pkg')">Xóa đã chọn</button>
+        </div>
+        <div id="adminPkgKeysFeedback" class="err"></div>
+        <div id="adminKeysList"></div>
+
+        <div class="item" style="margin-top:16px; border-color:#22c55e;">
+          <h3 style="color:#4ade80;">4. Kho Mua tùy chọn (400đ/key) — Còn: <span id="adminBulkStockText">0 key</span></h3>
+          <textarea id="bulkKeysTextarea" rows="4" placeholder="VX-SI-001&#10;VX-SI-002"></textarea>
+          <button class="green" onclick="importBulkKeys()">Nhập Key vào kho Tùy chọn</button>
+          <input id="bulkSearchInput" type="text" placeholder="Tìm key trong kho Tùy chọn..." oninput="filterAdminKeys('bulk')" />
+          <div class="toolbar">
+            <button class="dark" onclick="toggleSelectAll('bulk', true)">Chọn hết</button>
+            <button class="dark" onclick="toggleSelectAll('bulk', false)">Bỏ chọn</button>
+            <button class="red" onclick="deleteSelectedKeys('bulk')">Xóa đã chọn</button>
+          </div>
+          <div id="adminBulkFeedback" class="err"></div>
+          <div id="adminBulkKeysList"></div>
+        </div>
+
+        <div class="item" style="margin-top:16px; border-color:#f59e0b;">
+          <h3 style="color:#fbbf24;">5. Kho Key CTV (330đ/key — chỉ CTV mua được) — Còn: <span id="adminCtvStockText">0 key</span></h3>
+          <textarea id="ctvKeysTextarea" rows="4" placeholder="VX-CTV-001&#10;VX-CTV-002"></textarea>
+          <button class="amber" onclick="importCtvKeys()">Nhập Key vào kho CTV</button>
+          <input id="ctvSearchInput" type="text" placeholder="Tìm key trong kho CTV..." oninput="filterAdminKeys('ctv')" />
+          <div class="toolbar">
+            <button class="dark" onclick="toggleSelectAll('ctv', true)">Chọn hết</button>
+            <button class="dark" onclick="toggleSelectAll('ctv', false)">Bỏ chọn</button>
+            <button class="red" onclick="deleteSelectedKeys('ctv')">Xóa đã chọn</button>
+          </div>
+          <div id="adminCtvStockFeedback" class="err"></div>
+          <div id="adminCtvKeysList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const LAG_SNOOZE_KEY = "velox_lag_notice_until_2h";
+  const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+  let latestModalKeyText = "";
+
+  function formatKeysOnePerLine(rawText) {
+    const cleaned = String(rawText || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+    if (!cleaned) return "";
+    return cleaned.split(/\s*\|\s*|\s*,\s*|\n+/).map(function (s) { return s.trim(); }).filter(Boolean).join("\n");
+  }
+
+  window.addEventListener("error", function (ev) {
+    const errEl = document.getElementById("globalErrBox");
+    if (errEl && ev && ev.message) {
+      errEl.textContent = "Lỗi trang: " + ev.message;
+      errEl.style.display = "block";
+    }
+  });
+
+  function initLagNotice() {
+    const box = document.getElementById("lagNoticeBox");
+    if (!box) return;
+    const snoozeUntil = Number(localStorage.getItem(LAG_SNOOZE_KEY) || "0");
+    box.style.display = Date.now() < snoozeUntil ? "none" : "block";
+  }
+  function closeLagNotice() { document.getElementById("lagNoticeBox").style.display = "none"; }
+  function snoozeLagNotice2h() { localStorage.setItem(LAG_SNOOZE_KEY, String(Date.now() + TWO_HOURS_MS)); closeLagNotice(); }
+  function closeNapModal() { document.getElementById("napModalBackdrop").style.display = "none"; }
+  function closePassModal() { document.getElementById("passModalBackdrop").style.display = "none"; }
+
+  function switchTab(tabName) {
+    if (tabName === "admin" && typeof window.canOpenAdminTab === "function" && !window.canOpenAdminTab()) return;
+    ["buy", "keys", "history", "top", "admin"].forEach(function (t) {
+      const btn = document.getElementById("tabBtn_" + t);
+      const panel = document.getElementById("tabPanel_" + t);
+      if (btn) btn.classList.toggle("active", t === tabName);
+      if (panel) panel.style.display = (t === tabName) ? "block" : "none";
+    });
+  }
+
+  function openKeyModal(productName, keyText, purchasedAtText) {
+    latestModalKeyText = formatKeysOnePerLine(keyText);
+    document.getElementById("keyModalMeta").textContent = productName + " • " + purchasedAtText;
+    document.getElementById("keyModalCode").textContent = latestModalKeyText;
+    document.getElementById("keyModalBackdrop").style.display = "flex";
+  }
+  function closeKeyModal() { document.getElementById("keyModalBackdrop").style.display = "none"; }
+
+  async function copyTextToClipboard(text) {
+    const formatted = formatKeysOnePerLine(text);
+    if (!formatted) return false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(formatted);
+        return true;
+      }
+    } catch (e) {}
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = formatted; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta); return ok;
+    } catch (e) { return false; }
+  }
+
+  async function copyModalKey() {
+    const ok = await copyTextToClipboard(latestModalKeyText);
+    alert(ok ? "Đã copy key (mỗi key 1 dòng)!" : "Hãy giữ tay để copy mã key.");
+  }
+
+  async function copyOrderKey(encodedKey) {
+    const ok = await copyTextToClipboard(decodeURIComponent(encodedKey || ""));
+    if (ok && typeof window.showToastGlobal === "function") window.showToastGlobal("Đã copy mã key (mỗi key 1 dòng)!");
+  }
+
+  initLagNotice();
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    signOut, onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc,
+    collection, getDocs, query, where, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ĐỔI CẤU HÌNH NÀY SANG PROJECT FIREBASE MỚI CHO WEB THỨ 2
+  const firebaseConfig = {
+    apiKey: "YOUR_NEW_FIREBASE_API_KEY",
+    authDomain: "your-new-project.firebaseapp.com",
+    projectId: "your-new-project",
+    storageBucket: "your-new-project.firebasestorage.app",
+    messagingSenderId: "000000000000",
+    appId: "1:000000000000:web:0000000000000000"
+  };
+
+  const ROOT_ADMIN_EMAIL = "admin.velox@gmail.com";
+  const INTERNAL_DOMAIN = "velox.key";
+  const BULK_PRODUCT_ID = "vx_bulk_400";
+  const BULK_MIN_QTY = 20;
+  const BULK_UNIT_PRICE = 400;
+  const CTV_PRODUCT_ID = "vx_ctv_330";
+  const CTV_UNIT_PRICE = 330;
+  const KEY_TTL_DAYS = 30;
+  const KEY_TTL_MS = KEY_TTL_DAYS * 24 * 60 * 60 * 1000;
+
+  // Tách biệt tên collection nếu lỡ dùng chung DB
+  const COL_USERS = "vx_users";
+  const COL_PRODUCTS = "vx_products";
+  const COL_KEYS = "vx_keys";
+  const COL_ORDERS = "vx_orders";
+  const COL_BALANCE_LOGS = "vx_balance_logs";
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let currentUser = null;
+  let currentDisplayName = "";
+  let currentIsAdmin = false;
+  let currentIsCtv = false;
+  let currentBalance = 0;
+  let currentTotalDeposited = 0;
+  let productsCache = [];
+  let selectedProductId = "";
+
+  function isRootAdmin() { return Boolean(currentUser && currentUser.email === ROOT_ADMIN_EMAIL); }
+  function isAdmin() { return Boolean(currentUser && (isRootAdmin() || currentIsAdmin)); }
+  function canBuyCtv() { return Boolean(isAdmin() || currentIsCtv); }
+
+  function requireLoginAction(feedbackId, message) {
+    if (currentUser) return true;
+    showErr(message || "Vui lòng đăng nhập tài khoản để thực hiện thao tác này.", feedbackId || "globalErrBox");
+    const authBox = document.getElementById("authBox");
+    if (authBox) {
+      authBox.style.display = "block";
+      authBox.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    return false;
+  }
+
+  window.openNapModal = function () {
+    if (!requireLoginAction("globalErrBox", "Vui lòng đăng nhập trước khi nạp tiền.")) return;
+    document.getElementById("napModalBackdrop").style.display = "flex";
+  };
+
+  window.openPassModal = function () {
+    if (!requireLoginAction("globalErrBox", "Vui lòng đăng nhập trước khi đổi mật khẩu.")) return;
+    document.getElementById("oldPassInput").value = "";
+    document.getElementById("newPassInput").value = "";
+    document.getElementById("passFeedback").style.display = "none";
+    document.getElementById("passModalBackdrop").style.display = "flex";
+  };
+
+  window.canOpenAdminTab = function () {
+    if (!currentUser) {
+      switchTab("buy");
+      return requireLoginAction("globalErrBox", "Vui lòng đăng nhập tài khoản Admin để mở tab quản lý.");
+    }
+    if (!isAdmin()) { switchTab("buy"); return false; }
+    return true;
+  };
+
+  function toAuthEmail(rawInput) {
+    const cleaned = String(rawInput || "")
+      .trim().toLowerCase().replace(/\s+/g, "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9._@-]/g, "");
+    if (!cleaned) return "";
+    return cleaned.includes("@") ? cleaned : (cleaned + "@" + INTERNAL_DOMAIN);
+  }
+
+  function getCleanUsername(rawInput, fallbackEmail) {
+    const raw = String(rawInput || "").trim();
+    if (raw) return raw.includes("@") ? raw.split("@")[0] : raw;
+    const fb = String(fallbackEmail || "user").trim();
+    return fb.includes("@") ? fb.split("@")[0] : fb;
+  }
+
+  function clearInlineFeedbacks() {
+    document.querySelectorAll(".msg, .err").forEach(function (el) {
+      if (el.id !== "globalErrBox") { el.style.display = "none"; el.textContent = ""; }
+    });
+  }
+
+  function showMsg(text, targetId) {
+    if (!targetId) return;
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    el.className = "msg"; el.textContent = text; el.style.display = "block";
+  }
+
+  function showErr(text, targetId) {
+    const id = targetId || "globalErrBox";
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = "err"; el.textContent = text; el.style.display = "block";
+  }
+
+  window.showToastGlobal = function (text) { alert(text); };
+
+  function getTimestampMs(ts) {
+    if (!ts) return null;
+    if (typeof ts.toMillis === "function") return ts.toMillis();
+    if (typeof ts.seconds === "number") return ts.seconds * 1000;
+    const parsed = new Date(ts).getTime();
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function formatDateTime(ts) {
+    const ms = getTimestampMs(ts);
+    if (!ms) return "Vừa xong";
+    return new Date(ms).toLocaleString("vi-VN");
+  }
+
+  function formatMoney(n) { return Number(n || 0).toLocaleString("vi-VN") + "đ"; }
+  function escapeHtml(str) {
+    return String(str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  async function logBalanceChange(uid, displayName, delta, newBalance, reason, extra = {}) {
+    try {
+      await addDoc(collection(db, COL_BALANCE_LOGS), {
+        uid,
+        username: displayName || uid,
+        delta: Number(delta || 0),
+        balanceAfter: Number(newBalance || 0),
+        reason: String(reason || ""),
+        type: extra.type || (Number(delta) >= 0 ? "credit" : "debit"),
+        createdAt: serverTimestamp()
+      });
+    } catch (e) {}
+  }
+
+  async function ensureUserDoc(user, preferredUsername = "") {
+    const ref = doc(db, COL_USERS, user.uid);
+    const snap = await getDoc(ref);
+    const cleanName = getCleanUsername(preferredUsername, user.email);
+    const shouldBeAdmin = user.email === ROOT_ADMIN_EMAIL;
+
+    if (!snap.exists()) {
+      const initialData = {
+        email: user.email || "",
+        username: cleanName,
+        balance: 0,
+        totalDeposited: 0,
+        isAdmin: shouldBeAdmin,
+        isCtv: false,
+        createdAt: serverTimestamp()
+      };
+      await setDoc(ref, initialData);
+      return initialData;
+    }
+
+    const data = snap.data() || {};
+    const updates = {};
+    if (shouldBeAdmin && !data.isAdmin) updates.isAdmin = true;
+    if (!data.username && cleanName) updates.username = cleanName;
+    if (typeof data.totalDeposited !== "number") updates.totalDeposited = 0;
+    if (Object.keys(updates).length > 0) await updateDoc(ref, updates);
+    return { ...data, ...updates };
+  }
+
+  window.registerUser = async function () {
+    clearInlineFeedbacks();
+    const rawAcc = document.getElementById("emailInput").value;
+    const pass = document.getElementById("passInput").value;
+    const email = toAuthEmail(rawAcc);
+    const cleanName = getCleanUsername(rawAcc, email);
+    if (!email || cleanName.length < 2) return showErr("Vui lòng nhập tên tài khoản hợp lệ (ít nhất 2 ký tự).", "authFeedback");
+    if (pass.length < 6) return showErr("Mật khẩu phải ít nhất 6 ký tự.", "authFeedback");
+
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await ensureUserDoc(cred.user, cleanName);
+      showMsg("Đăng ký thành công tài khoản " + cleanName + "!", "authFeedback");
+    } catch (e) {
+      if (e.code === "auth/email-already-in-use") showErr("Tên tài khoản này đã được đăng ký.", "authFeedback");
+      else showErr("Lỗi đăng ký: " + e.message, "authFeedback");
+    }
+  };
+
+  window.loginUser = async function () {
+    clearInlineFeedbacks();
+    const rawAcc = document.getElementById("emailInput").value;
+    const pass = document.getElementById("passInput").value;
+    const email = toAuthEmail(rawAcc);
+    if (!email) return showErr("Vui lòng nhập tên tài khoản.", "authFeedback");
+    if (!pass) return showErr("Vui lòng nhập mật khẩu.", "authFeedback");
+
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+      await ensureUserDoc(cred.user, getCleanUsername(rawAcc, email));
+    } catch (e) {
+      showErr("Sai tên tài khoản hoặc mật khẩu.", "authFeedback");
+    }
+  };
+
+  window.logoutUser = async function () {
+    clearInlineFeedbacks();
+    await signOut(auth);
+  };
+
+  window.changeUserPassword = async function () {
+    const fbId = "passFeedback";
+    const el = document.getElementById(fbId);
+    if (el) { el.style.display = "none"; el.textContent = ""; }
+    if (!currentUser) return showErr("Bạn chưa đăng nhập.", fbId);
+    const oldPass = document.getElementById("oldPassInput").value;
+    const newPass = document.getElementById("newPassInput").value;
+    if (!oldPass) return showErr("Vui lòng nhập mật khẩu cũ.", fbId);
+    if (newPass.length < 6) return showErr("Mật khẩu mới phải ít nhất 6 ký tự.", fbId);
+    if (oldPass === newPass) return showErr("Mật khẩu mới phải khác mật khẩu cũ.", fbId);
+
+    try {
+      const cred = EmailAuthProvider.credential(currentUser.email, oldPass);
+      await reauthenticateWithCredential(currentUser, cred);
+      await updatePassword(currentUser, newPass);
+      alert("Đổi mật khẩu thành công!");
+      closePassModal();
+    } catch (e) {
+      showErr("Mật khẩu cũ không đúng hoặc cần đăng nhập lại.", fbId);
+    }
+  };
+
+  function renderProfileHeader() {
+    const authBox = document.getElementById("authBox");
+    const avatarEl = document.getElementById("avatarCircle");
+    const nameEl = document.getElementById("profileDisplayName");
+    const roleEl = document.getElementById("profileRoleBadge");
+    const ctvEl = document.getElementById("profileCtvBadge");
+    const subEl = document.getElementById("profileEmailSub");
+    const adminTabBtn = document.getElementById("tabBtn_admin");
+
+    if (!currentUser) {
+      if (authBox) authBox.style.display = "block";
+      avatarEl.textContent = "K";
+      nameEl.textContent = "Khách";
+      roleEl.textContent = "Chưa đăng nhập";
+      roleEl.style.background = "rgba(148, 163, 184, 0.16)";
+      roleEl.style.color = "#cbd5e1";
+      roleEl.style.borderColor = "rgba(148, 163, 184, 0.35)";
+      ctvEl.style.display = "none";
+      subEl.textContent = "Xem gói key tự do • Đăng nhập để mua hoặc quản lý";
+      adminTabBtn.style.display = "none";
+      switchTab("buy");
+      return;
+    }
+
+    if (authBox) authBox.style.display = "none";
+    const display = currentDisplayName || getCleanUsername("", currentUser.email);
+    avatarEl.textContent = display.charAt(0).toUpperCase() || "U";
+    nameEl.textContent = display;
+    subEl.textContent = currentUser.email || "";
+
+    if (isAdmin()) {
+      roleEl.textContent = isRootAdmin() ? "Admin Gốc" : "Admin";
+      roleEl.style.background = "rgba(245, 158, 11, 0.18)";
+      roleEl.style.color = "#fbbf24";
+      roleEl.style.borderColor = "rgba(245, 158, 11, 0.45)";
+    } else {
+      roleEl.textContent = "Thành viên";
+      roleEl.style.background = "rgba(34, 197, 94, 0.16)";
+      roleEl.style.color = "#4ade80";
+      roleEl.style.borderColor = "rgba(34, 197, 94, 0.4)";
+    }
+
+    ctvEl.style.display = currentIsCtv ? "inline-block" : "none";
+    adminTabBtn.style.display = isAdmin() ? "inline-block" : "none";
+    if (!isAdmin()) switchTab("buy");
+  }
+
+  function renderCtvAccessUi() {
+    const allowed = canBuyCtv();
+    const btn = document.getElementById("buyCtvBtn");
+    const input = document.getElementById("ctvQtyInput");
+    if (btn) {
+      btn.disabled = !allowed;
+      btn.style.opacity = allowed ? "1" : "0.55";
+      btn.textContent = allowed ? "Mua Key CTV (330đ/key)" : "Chỉ dành cho tài khoản CTV";
+    }
+    if (input) {
+      input.disabled = !allowed;
+      input.placeholder = allowed ? "Nhập số lượng key CTV muốn mua..." : "Tài khoản chưa được cấp quyền CTV";
+    }
+  }
+
+  function parseKeyLines(rawText) {
+    return String(rawText || "")
+      .split(/\r?\n/).map(function (k) { return k.trim(); }).filter(Boolean);
+  }
+
+  function isKeyExpired(keyDocData, nowMs = Date.now()) {
+    const createdMs = getTimestampMs(keyDocData && keyDocData.createdAt);
+    if (!createdMs) return false;
+    return (nowMs - createdMs) >= KEY_TTL_MS;
+  }
+
+  function formatKeyAgeText(keyDocData, nowMs = Date.now()) {
+    const createdMs = getTimestampMs(keyDocData && keyDocData.createdAt);
+    if (!createdMs) return "Mới nhập";
+    const diffMs = Math.max(0, nowMs - createdMs);
+    const hours = Math.floor(diffMs / (60 * 60 * 1000));
+    if (hours < 1) return "Vừa nhập (<1h)";
+    const days = Math.floor(hours / 24);
+    if (days < 1) return hours + " giờ trước";
+    return days + " ngày trước (xóa sau " + Math.max(0, KEY_TTL_DAYS - days) + "n)";
+  }
+
+  async function purgeExpiredKeysInQuery(qRef) {
+    try {
+      const snap = await getDocs(qRef);
+      const nowMs = Date.now();
+      let deletedCount = 0;
+      for (const d of snap.docs) {
+        if (isKeyExpired(d.data(), nowMs)) {
+          await deleteDoc(doc(db, COL_KEYS, d.id));
+          deletedCount++;
+        }
+      }
+      return deletedCount;
+    } catch (e) { return 0; }
+  }
+
+  async function cleanupAllExpiredKeys() {
+    if (!isAdmin()) return;
+    await purgeExpiredKeysInQuery(query(collection(db, COL_KEYS), where("sold", "==", false)));
+  }
+
+  async function refreshUserStats() {
+    if (!currentUser) {
+      currentBalance = 0; currentTotalDeposited = 0; currentIsAdmin = false; currentIsCtv = false; currentDisplayName = "";
+      document.getElementById("statBalance").textContent = "0đ";
+      document.getElementById("statTotalSpent").textContent = "0đ";
+      document.getElementById("statTotalKeys").textContent = "0";
+      document.getElementById("statTotalDeposited").textContent = "0đ";
+      renderProfileHeader(); renderCtvAccessUi();
+      return;
+    }
+
+    const uSnap = await getDoc(doc(db, COL_USERS, currentUser.uid));
+    const uData = uSnap.exists() ? uSnap.data() : {};
+    currentBalance = Number(uData.balance || 0);
+    currentTotalDeposited = Number(uData.totalDeposited || 0);
+    currentIsAdmin = Boolean(uData.isAdmin) || isRootAdmin();
+    currentIsCtv = Boolean(uData.isCtv);
+    currentDisplayName = getCleanUsername(uData.username, currentUser.email);
+
+    document.getElementById("statBalance").textContent = formatMoney(currentBalance);
+    document.getElementById("statTotalDeposited").textContent = formatMoney(currentTotalDeposited);
+
+    const oSnap = await getDocs(query(collection(db, COL_ORDERS), where("buyerUid", "==", currentUser.uid)));
+    let totalSpent = 0, totalKeys = 0;
+    oSnap.forEach(function (d) {
+      const o = d.data();
+      totalSpent += Number(o.totalPrice || 0);
+      totalKeys += Number(o.quantity || (Array.isArray(o.keys) ? o.keys.length : 1) || 0);
+    });
+
+    document.getElementById("statTotalSpent").textContent = formatMoney(totalSpent);
+    document.getElementById("statTotalKeys").textContent = String(totalKeys);
+    renderProfileHeader(); renderCtvAccessUi();
+  }
+
+  function getSelectedProduct() {
+    return productsCache.find(function (p) { return p.id === selectedProductId; }) || null;
+  }
+
+  function updateSelectedPkgPaymentUI() {
+    const prod = getSelectedProduct();
+    const qtyInput = document.getElementById("selectedPkgQtyInput");
+    const summaryEl = document.getElementById("selectedPkgSummary");
+    const totalEl = document.getElementById("selectedPkgTotal");
+    if (!prod) {
+      summaryEl.textContent = "Chưa chọn gói";
+      totalEl.textContent = "0đ";
+      return;
+    }
+    let qty = parseInt(qtyInput.value, 10);
+    if (!Number.isFinite(qty) || qty < 1) qty = 1;
+    summaryEl.textContent = prod.name + " x" + qty;
+    totalEl.textContent = formatMoney(Number(prod.price || 0) * qty);
+  }
+
+  window.selectProductTile = function (prodId) {
+    selectedProductId = prodId;
+    document.querySelectorAll(".pkg-tile").forEach(function (el) {
+      el.classList.toggle("selected", el.getAttribute("data-id") === prodId);
+    });
+    updateSelectedPkgPaymentUI();
+  };
+
+  window.stepSelectedPkgQty = function (delta) {
+    const input = document.getElementById("selectedPkgQtyInput");
+    const current = parseInt(input.value, 10);
+    input.value = String(Math.max(1, (Number.isFinite(current) ? current : 1) + delta));
+    updateSelectedPkgPaymentUI();
+  };
+
+  window.onSelectedPkgQtyInput = function () { updateSelectedPkgPaymentUI(); };
+
+  window.updateBulkCalc = function () {
+    const qty = parseInt(document.getElementById("bulkQtyInput").value, 10);
+    document.getElementById("bulkCalcText").textContent = formatMoney((Number.isFinite(qty) && qty > 0) ? qty * BULK_UNIT_PRICE : 0);
+  };
+
+  window.updateCtvCalc = function () {
+    const qty = parseInt(document.getElementById("ctvQtyInput").value, 10);
+    document.getElementById("ctvCalcText").textContent = formatMoney((Number.isFinite(qty) && qty > 0) ? qty * CTV_UNIT_PRICE : 0);
+  };
+
+  async function loadProductsAndStock() {
+    const pSnap = await getDocs(collection(db, COL_PRODUCTS));
+    const kSnap = await getDocs(query(collection(db, COL_KEYS), where("sold", "==", false)));
+    const nowMs = Date.now();
+
+    const stockMap = {};
+    let bulkStock = 0, ctvStock = 0;
+
+    kSnap.forEach(function (d) {
+      const k = d.data();
+      if (isKeyExpired(k, nowMs)) return;
+      if (k.productId === BULK_PRODUCT_ID) bulkStock++;
+      else if (k.productId === CTV_PRODUCT_ID) ctvStock++;
+      else if (k.productId) stockMap[k.productId] = (stockMap[k.productId] || 0) + 1;
+    });
+
+    document.getElementById("bulkStockBadge").textContent = "Kho sỉ: " + bulkStock + " key";
+    document.getElementById("ctvStockBadge").textContent = "Kho CTV: " + ctvStock + " key";
+    const admBulk = document.getElementById("adminBulkStockText");
+    const admCtv = document.getElementById("adminCtvStockText");
+    if (admBulk) admBulk.textContent = bulkStock + " key";
+    if (admCtv) admCtv.textContent = ctvStock + " key";
+
+    productsCache = [];
+    pSnap.forEach(function (d) {
+      const data = d.data();
+      if (d.id === BULK_PRODUCT_ID || d.id === CTV_PRODUCT_ID || data.isHiddenShop) return;
+      productsCache.push({ id: d.id, ...data, stock: stockMap[d.id] || 0 });
+    });
+    productsCache.sort(function (a, b) { return Number(a.price || 0) - Number(b.price || 0); });
+
+    const gridEl = document.getElementById("pkgGridContainer");
+    const selectEl = document.getElementById("keyProdSelect");
+    const prevSelectVal = selectEl ? selectEl.value : "";
+
+    if (!productsCache.length) {
+      selectedProductId = "";
+      gridEl.innerHTML = '<div style="grid-column:1/-1; color:#94a3b8; font-size:13px;">Chưa có gói key nào.</div>';
+      if (selectEl) selectEl.innerHTML = '<option value="">-- Chưa có gói --</option>';
+      updateSelectedPkgPaymentUI();
+      return;
+    }
+
+    if (!selectedProductId || !productsCache.some(function (p) { return p.id === selectedProductId; })) {
+      selectedProductId = productsCache[0].id;
+    }
+
+    gridEl.innerHTML = productsCache.map(function (p) {
+      const activeClass = (p.id === selectedProductId) ? " selected" : "";
+      return '<div class="pkg-tile' + activeClass + '" data-id="' + escapeHtml(p.id) + '" onclick="selectProductTile(\'' + escapeHtml(p.id) + '\')">' +
+        '<div class="pkg-tile-name">' + escapeHtml(p.name) + '</div>' +
+        '<div class="pkg-tile-price">' + formatMoney(p.price) + '</div>' +
+        '<div class="pkg-tile-stock">Còn: ' + p.stock + ' key</div>' +
+      '</div>';
+    }).join("");
+
+    if (selectEl) {
+      selectEl.innerHTML = productsCache.map(function (p) {
+        return '<option value="' + escapeHtml(p.id) + '">' + escapeHtml(p.name) + ' (' + formatMoney(p.price) + ' • Còn ' + p.stock + ')</option>';
+      }).join("");
+      if (prevSelectVal && productsCache.some(function (p) { return p.id === prevSelectVal; })) selectEl.value = prevSelectVal;
+    }
+
+    updateSelectedPkgPaymentUI();
+    if (isAdmin()) await loadAdminKeys();
+  }
+
+  async function executeKeyPurchase(opts) {
+    const { feedbackId, productId, displayProductName, unitPrice, quantity, isBulk, isCtv } = opts;
+    if (!requireLoginAction(feedbackId, "Vui lòng đăng nhập tài khoản để mua key.")) return;
+    if (isCtv && !canBuyCtv()) return showErr("Chỉ tài khoản CTV mới có quyền mua gói này.", feedbackId);
+    if (!Number.isInteger(quantity) || quantity < 1) return showErr("Số lượng key không hợp lệ.", feedbackId);
+    if (isBulk && quantity < BULK_MIN_QTY) return showErr("Mua tùy chọn tối thiểu " + BULK_MIN_QTY + " key.", feedbackId);
+
+    const totalCost = unitPrice * quantity;
+    await refreshUserStats();
+    if (currentBalance < totalCost) return showErr("Số dư không đủ (cần " + formatMoney(totalCost) + ", hiện có " + formatMoney(currentBalance) + ").", feedbackId);
+
+    await purgeExpiredKeysInQuery(query(collection(db, COL_KEYS), where("productId", "==", productId), where("sold", "==", false)));
+    const kSnap = await getDocs(query(collection(db, COL_KEYS), where("productId", "==", productId), where("sold", "==", false)));
+
+    const availableDocs = [];
+    const nowMs = Date.now();
+    kSnap.forEach(function (d) {
+      const data = d.data();
+      if (!data.sold && !isKeyExpired(data, nowMs)) availableDocs.push({ id: d.id, ...data });
+    });
+
+    if (availableDocs.length < quantity) return showErr("Kho không đủ key (còn " + availableDocs.length + " key).", feedbackId);
+
+    const pickedDocs = availableDocs.slice(0, quantity);
+    const boughtKeys = [];
+
+    for (const item of pickedDocs) {
+      await updateDoc(doc(db, COL_KEYS, item.id), {
+        sold: true,
+        buyerUid: currentUser.uid,
+        buyerEmail: currentUser.email || "",
+        buyerName: currentDisplayName || currentUser.email || "",
+        soldAt: serverTimestamp()
+      });
+      boughtKeys.push(item.code);
+    }
+
+    const newBalance = currentBalance - totalCost;
+    await updateDoc(doc(db, COL_USERS, currentUser.uid), { balance: newBalance });
+    await logBalanceChange(currentUser.uid, currentDisplayName, -totalCost, newBalance, "Mua " + quantity + "x " + displayProductName, { type: "purchase" });
+
+    const orderLabel = quantity > 1 ? (displayProductName + " (x" + quantity + ")") : displayProductName;
+    await addDoc(collection(db, COL_ORDERS), {
+      buyerUid: currentUser.uid,
+      buyerEmail: currentUser.email || "",
+      buyerName: currentDisplayName || currentUser.email || "",
+      productId,
+      productName: orderLabel,
+      quantity,
+      price: totalCost,
+      totalPrice: totalCost,
+      keys: boughtKeys,
+      key: boughtKeys.join("\n"),
+      createdAt: serverTimestamp()
+    });
+
+    await refreshUserStats();
+    await loadProductsAndStock();
+    await loadMyOrders();
+    await loadBalanceHistory();
+    await loadLeaderboard();
+
+    const joinedKeys = boughtKeys.join("\n");
+    showMsg("Mua thành công " + quantity + " key! Mã key đã mở trong khung hiển thị.", feedbackId);
+    openKeyModal(orderLabel + " • " + formatMoney(totalCost), joinedKeys, new Date().toLocaleString("vi-VN"));
+  }
+
+  window.buySelectedProduct = async function () {
+    clearInlineFeedbacks();
+    const prod = getSelectedProduct();
+    if (!prod) return showErr("Vui lòng chọn một gói key.", "buyPkgFeedback");
+    const qty = parseInt(document.getElementById("selectedPkgQtyInput").value, 10);
+    await executeKeyPurchase({
+      feedbackId: "buyPkgFeedback", productId: prod.id, displayProductName: prod.name,
+      unitPrice: Number(prod.price || 0), quantity: qty, isBulk: false, isCtv: false
+    });
+  };
+
+  window.buyBulkKeys = async function () {
+    clearInlineFeedbacks();
+    const qty = parseInt(document.getElementById("bulkQtyInput").value, 10);
+    await executeKeyPurchase({
+      feedbackId: "bulkFeedback", productId: BULK_PRODUCT_ID, displayProductName: "Key Tùy Chọn (400đ/key)",
+      unitPrice: BULK_UNIT_PRICE, quantity: qty, isBulk: true, isCtv: false
+    });
+  };
+
+  window.buyCtvKeys = async function () {
+    clearInlineFeedbacks();
+    const qty = parseInt(document.getElementById("ctvQtyInput").value, 10);
+    await executeKeyPurchase({
+      feedbackId: "ctvBuyFeedback", productId: CTV_PRODUCT_ID, displayProductName: "Key CTV (330đ/key)",
+      unitPrice: CTV_UNIT_PRICE, quantity: qty, isBulk: false, isCtv: true
+    });
+  };
+
+  async function loadMyOrders() {
+    const listEl = document.getElementById("ordersList");
+    if (!currentUser) { listEl.innerHTML = "Vui lòng đăng nhập để xem key đã mua."; return; }
+
+    const snap = await getDocs(query(collection(db, COL_ORDERS), where("buyerUid", "==", currentUser.uid)));
+    const orders = [];
+    snap.forEach(function (d) { orders.push({ id: d.id, ...d.data() }); });
+    orders.sort(function (a, b) { return (getTimestampMs(b.createdAt) || 0) - (getTimestampMs(a.createdAt) || 0); });
+
+    if (!orders.length) { listEl.innerHTML = "Bạn chưa mua key nào."; return; }
+
+    listEl.innerHTML = orders.map(function (o) {
+      const formattedKey = formatKeysOnePerLine(Array.isArray(o.keys) ? o.keys.join("\n") : (o.key || ""));
+      const encodedKey = encodeURIComponent(formattedKey);
+      return '<div class="item">' +
+        '<div style="display:flex; justify-content:space-between; gap:8px;">' +
+          '<b>' + escapeHtml(o.productName || "Gói key") + '</b>' +
+          '<span style="color:#38bdf8; font-weight:700;">' + formatMoney(o.totalPrice || o.price || 0) + '</span>' +
+        '</div>' +
+        '<div style="font-size:12px; color:#94a3b8; margin-top:4px;">Thời gian: ' + formatDateTime(o.createdAt) + '</div>' +
+        '<div class="key-box">' + escapeHtml(formattedKey) + '</div>' +
+        '<button class="green" style="margin-top:8px;" onclick="copyOrderKey(\'' + encodedKey + '\')">Copy Key</button>' +
+      '</div>';
+    }).join("");
+  }
+
+  async function loadBalanceHistory() {
+    const listEl = document.getElementById("balanceHistoryList");
+    if (!currentUser) { listEl.innerHTML = "Vui lòng đăng nhập để xem lịch sử biến động số dư."; return; }
+
+    const snap = await getDocs(query(collection(db, COL_BALANCE_LOGS), where("uid", "==", currentUser.uid)));
+    const logs = [];
+    snap.forEach(function (d) { logs.push({ id: d.id, ...d.data() }); });
+    logs.sort(function (a, b) { return (getTimestampMs(b.createdAt) || 0) - (getTimestampMs(a.createdAt) || 0); });
+
+    if (!logs.length) { listEl.innerHTML = "Chưa có biến động số dư nào."; return; }
+
+    listEl.innerHTML = logs.map(function (l) {
+      const delta = Number(l.delta || 0);
+      const isPos = delta >= 0;
+      return '<div class="item">' +
+        '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">' +
+          '<b style="color:' + (isPos ? "#4ade80" : "#fb7185") + '; font-size:15px;">' + (isPos ? "+" : "-") + formatMoney(Math.abs(delta)) + '</b>' +
+          '<span style="font-size:12px; color:#94a3b8;">' + formatDateTime(l.createdAt) + '</span>' +
+        '</div>' +
+        '<div style="font-size:13px; color:#e2e8f0; margin-top:4px;">' + escapeHtml(l.reason || "Biến động số dư") + '</div>' +
+        '<div style="font-size:12px; color:#94a3b8; margin-top:3px;">Số dư sau GD: <b style="color:#38bdf8;">' + formatMoney(l.balanceAfter || 0) + '</b></div>' +
+      '</div>';
+    }).join("");
+  }
+
+  async function loadLeaderboard() {
+    const listEl = document.getElementById("leaderboardList");
+    try {
+      const snap = await getDocs(collection(db, COL_ORDERS));
+      const mapByUser = {};
+      snap.forEach(function (d) {
+        const o = d.data();
+        const uidKey = o.buyerUid || o.buyerEmail || o.buyerName || d.id;
+        const label = getCleanUsername(o.buyerName, o.buyerEmail) || "Người dùng";
+        const spent = Number(o.totalPrice || o.price || 0);
+        const keysCount = Number(o.quantity || (Array.isArray(o.keys) ? o.keys.length : 1) || 0);
+        if (!mapByUser[uidKey]) mapByUser[uidKey] = { label, spent: 0, keysCount: 0 };
+        mapByUser[uidKey].spent += spent;
+        mapByUser[uidKey].keysCount += keysCount;
+        if (o.buyerName) mapByUser[uidKey].label = getCleanUsername(o.buyerName, o.buyerEmail);
+      });
+
+      const ranked = Object.values(mapByUser).sort(function (a, b) {
+        return (b.spent - a.spent) || (b.keysCount - a.keysCount);
+      }).slice(0, 10);
+
+      if (!ranked.length) { listEl.innerHTML = "Chưa có dữ liệu đua top."; return; }
+
+      const medals = ["🥇", "🥈", "🥉"];
+      listEl.innerHTML = ranked.map(function (row, idx) {
+        return '<div class="rank-row">' +
+          '<div><span style="font-size:16px; margin-right:6px;">' + (medals[idx] || ("#" + (idx + 1))) + '</span><span class="rank-buyer">' + escapeHtml(row.label) + '</span></div>' +
+          '<div style="text-align:right;"><div style="color:#facc15; font-weight:800;">' + formatMoney(row.spent) + '</div><div style="font-size:11.5px; color:#94a3b8;">' + row.keysCount + ' key</div></div>' +
+        '</div>';
+      }).join("");
+    } catch (e) {
+      listEl.innerHTML = "Không thể tải bảng xếp hạng.";
+    }
+  }
+
+  async function findUserDocByIdentifier(rawIdentifier) {
+    const trimmed = String(rawIdentifier || "").trim();
+    if (!trimmed) return null;
+    const byId = await getDoc(doc(db, COL_USERS, trimmed));
+    if (byId.exists()) return { id: byId.id, data: byId.data() };
+
+    const allUsersSnap = await getDocs(collection(db, COL_USERS));
+    const lower = trimmed.toLowerCase();
+    const mappedEmail = toAuthEmail(trimmed).toLowerCase();
+    const cleanName = getCleanUsername(trimmed, "").toLowerCase();
+
+    for (const d of allUsersSnap.docs) {
+      const data = d.data() || {};
+      const uEmail = String(data.email || "").toLowerCase();
+      const uName = String(data.username || "").toLowerCase();
+      const uPrefix = uEmail.includes("@") ? uEmail.split("@")[0] : uEmail;
+      if (d.id.toLowerCase() === lower || (uEmail && (uEmail === lower || uEmail === mappedEmail)) || (uName && (uName === lower || uName === cleanName)) || (uPrefix && uPrefix === cleanName)) {
+        return { id: d.id, data };
+      }
+    }
+    return null;
+  }
+
+  async function loadRoleLists() {
+    if (!isAdmin()) return;
+    const adminBox = document.getElementById("adminListBox");
+    const ctvBox = document.getElementById("ctvListBox");
+    const snap = await getDocs(collection(db, COL_USERS));
+    const admins = [], ctvs = [];
+
+    snap.forEach(function (d) {
+      const data = d.data() || {};
+      const label = getCleanUsername(data.username, data.email) + (data.email === ROOT_ADMIN_EMAIL ? " (Gốc)" : "");
+      if (data.isAdmin || data.email === ROOT_ADMIN_EMAIL) admins.push(label);
+      if (data.isCtv) ctvs.push(label);
+    });
+
+    adminBox.innerHTML = admins.length ? admins.map(function (x) { return '<span class="ctv-chip">👑 ' + escapeHtml(x) + '</span>'; }).join("") : "Chưa có.";
+    ctvBox.innerHTML = ctvs.length ? ctvs.map(function (x) { return '<span class="ctv-chip">⭐ ' + escapeHtml(x) + '</span>'; }).join("") : "Chưa có CTV nào.";
+  }
+
+  window.adminSetAdminRole = async function (enableAdmin) {
+    if (!isAdmin()) return;
+    const rawTarget = document.getElementById("adminRoleTargetInput").value;
+    const found = await findUserDocByIdentifier(rawTarget);
+    if (!found) return showErr("Không tìm thấy người dùng này.", "adminRoleFeedback");
+    if (!enableAdmin && found.data.email === ROOT_ADMIN_EMAIL) return showErr("Không thể xóa quyền Admin Gốc.", "adminRoleFeedback");
+
+    await updateDoc(doc(db, COL_USERS, found.id), { isAdmin: Boolean(enableAdmin) });
+    showMsg((enableAdmin ? "Đã cấp quyền Admin cho " : "Đã xóa quyền Admin của ") + getCleanUsername(found.data.username, found.data.email), "adminRoleFeedback");
+    await loadRoleLists();
+    if (currentUser && currentUser.uid === found.id) await refreshUserStats();
+  };
+
+  window.adminSetCtvRole = async function (enableCtv) {
+    if (!isAdmin()) return;
+    const rawTarget = document.getElementById("ctvTargetInput").value;
+    const found = await findUserDocByIdentifier(rawTarget);
+    if (!found) return showErr("Không tìm thấy người dùng này.", "adminCtvFeedback");
+
+    await updateDoc(doc(db, COL_USERS, found.id), { isCtv: Boolean(enableCtv) });
+    showMsg((enableCtv ? "Đã thêm CTV: " : "Đã gỡ CTV: ") + getCleanUsername(found.data.username, found.data.email), "adminCtvFeedback");
+    await loadRoleLists();
+    if (currentUser && currentUser.uid === found.id) await refreshUserStats();
+  };
+
+  window.adminAddBalance = async function () {
+    if (!isAdmin()) return;
+    const rawTarget = document.getElementById("targetUserInput").value;
+    const amount = Number(document.getElementById("addAmountInput").value);
+    const found = await findUserDocByIdentifier(rawTarget);
+    if (!found) return showErr("Không tìm thấy người dùng này.", "adminBalFeedback");
+    if (!Number.isFinite(amount) || amount === 0) return showErr("Vui lòng nhập số tiền hợp lệ.", "adminBalFeedback");
+
+    const prevBal = Number(found.data.balance || 0);
+    const nextBal = prevBal + amount;
+    const prevDep = Number(found.data.totalDeposited || 0);
+    const updates = { balance: nextBal };
+    if (amount > 0) updates.totalDeposited = prevDep + amount;
+
+    await updateDoc(doc(db, COL_USERS, found.id), updates);
+    const uLabel = getCleanUsername(found.data.username, found.data.email);
+    await logBalanceChange(found.id, uLabel, amount, nextBal, amount > 0 ? "Admin cộng tiền" : "Admin trừ tiền", { type: "admin_adjust" });
+
+    showMsg("Đã cập nhật số dư cho " + uLabel + ": " + formatMoney(nextBal), "adminBalFeedback");
+    if (currentUser && currentUser.uid === found.id) await refreshUserStats();
+  };
+
+  window.adminResetBalance = async function () {
+    if (!isAdmin()) return;
+    const rawTarget = document.getElementById("targetUserInput").value;
+    const found = await findUserDocByIdentifier(rawTarget);
+    if (!found) return showErr("Không tìm thấy người dùng này.", "adminBalFeedback");
+
+    const prevBal = Number(found.data.balance || 0);
+    await updateDoc(doc(db, COL_USERS, found.id), { balance: 0 });
+    const uLabel = getCleanUsername(found.data.username, found.data.email);
+    await logBalanceChange(found.id, uLabel, -prevBal, 0, "Admin đặt số dư về 0đ", { type: "admin_reset" });
+
+    showMsg("Đã đưa số dư của " + uLabel + " về 0đ.", "adminBalFeedback");
+    if (currentUser && currentUser.uid === found.id) await refreshUserStats();
+  };
+
+  window.adminDeleteUser = async function () {
+    if (!isAdmin()) return;
+    const rawTarget = document.getElementById("targetUserInput").value;
+    const found = await findUserDocByIdentifier(rawTarget);
+    if (!found) return showErr("Không tìm thấy người dùng này.", "adminBalFeedback");
+    if (found.data.email === ROOT_ADMIN_EMAIL || (currentUser && found.id === currentUser.uid)) {
+      return showErr("Không thể xóa tài khoản Admin Gốc hoặc chính bạn.", "adminBalFeedback");
+    }
+
+    await deleteDoc(doc(db, COL_USERS, found.id));
+    showMsg("Đã xóa hồ sơ người dùng " + getCleanUsername(found.data.username, found.data.email), "adminBalFeedback");
+    await loadRoleLists();
+  };
+
+  window.addProduct = async function () {
+    if (!isAdmin()) return;
+    const name = document.getElementById("prodName").value.trim();
+    const price = Number(document.getElementById("prodPrice").value);
+    if (!name) return showErr("Vui lòng nhập tên gói.", "adminProdFeedback");
+    if (!Number.isFinite(price) || price < 0) return showErr("Giá bán không hợp lệ.", "adminProdFeedback");
+
+    const created = await addDoc(collection(db, COL_PRODUCTS), { name, price, createdAt: serverTimestamp() });
+    selectedProductId = created.id;
+    document.getElementById("prodName").value = "";
+    document.getElementById("prodPrice").value = "";
+    showMsg("Đã thêm gói: " + name, "adminProdFeedback");
+    await loadProductsAndStock();
+  };
+
+  window.deleteCurrentSelectedProduct = async function () {
+    if (!isAdmin()) return;
+    const prodId = document.getElementById("keyProdSelect").value;
+    if (!prodId) return showErr("Chưa chọn gói để xóa.", "adminImportFeedback");
+    const kSnap = await getDocs(query(collection(db, COL_KEYS), where("productId", "==", prodId)));
+    for (const d of kSnap.docs) await deleteDoc(doc(db, COL_KEYS, d.id));
+    await deleteDoc(doc(db, COL_PRODUCTS, prodId));
+    showMsg("Đã xóa gói và toàn bộ key thuộc gói.", "adminImportFeedback");
+    await loadProductsAndStock();
+  };
+
+  async function importKeysToPool(productId, rawText, feedbackId, textareaId) {
+    if (!isAdmin()) return;
+    if (!productId) return showErr("Chưa chọn kho/gói.", feedbackId);
+    const lines = parseKeyLines(rawText);
+    if (!lines.length) return showErr("Vui lòng nhập ít nhất 1 mã key.", feedbackId);
+
+    for (const code of lines) {
+      await addDoc(collection(db, COL_KEYS), { productId, code, sold: false, createdAt: serverTimestamp() });
+    }
+    document.getElementById(textareaId).value = "";
+    showMsg("Đã nhập " + lines.length + " key vào kho độc lập!", feedbackId);
+    await loadProductsAndStock();
+  }
+
+  window.importKeys = async function () {
+    await importKeysToPool(document.getElementById("keyProdSelect").value, document.getElementById("keysTextarea").value, "adminImportFeedback", "keysTextarea");
+  };
+  window.importBulkKeys = async function () {
+    await importKeysToPool(BULK_PRODUCT_ID, document.getElementById("bulkKeysTextarea").value, "adminBulkFeedback", "bulkKeysTextarea");
+  };
+  window.importCtvKeys = async function () {
+    await importKeysToPool(CTV_PRODUCT_ID, document.getElementById("ctvKeysTextarea").value, "adminCtvStockFeedback", "ctvKeysTextarea");
+  };
+
+  function renderKeyRows(containerId, listClass, items, nowMs) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!items.length) { el.innerHTML = '<div style="font-size:12.5px; color:#94a3b8; margin-top:6px;">Không có key chưa bán.</div>'; return; }
+    el.innerHTML = items.map(function (k) {
+      return '<div class="key-row">' +
+        '<div class="key-left">' +
+          '<input type="checkbox" class="key-check ' + listClass + '" value="' + escapeHtml(k.id) + '" />' +
+          '<div><div class="key-code">' + escapeHtml(k.code) + '</div><div class="key-age">' + formatKeyAgeText(k, nowMs) + '</div></div>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+  }
+
+  window.filterAdminKeys = function (poolType) {
+    const map = {
+      pkg: { inputId: "pkgSearchInput", containerId: "adminKeysList", cls: "chk-pkg", data: window._admPkgKeys || [] },
+      bulk: { inputId: "bulkSearchInput", containerId: "adminBulkKeysList", cls: "chk-bulk", data: window._admBulkKeys || [] },
+      ctv: { inputId: "ctvSearchInput", containerId: "adminCtvKeysList", cls: "chk-ctv", data: window._admCtvKeys || [] }
+    };
+    const cfg = map[poolType];
+    if (!cfg) return;
+    const kw = String(document.getElementById(cfg.inputId).value || "").trim().toLowerCase();
+    const filtered = kw ? cfg.data.filter(function (x) { return String(x.code || "").toLowerCase().includes(kw); }) : cfg.data;
+    renderKeyRows(cfg.containerId, cfg.cls, filtered, Date.now());
+  };
+
+  window.loadAdminKeys = async function () {
+    if (!isAdmin()) return;
+    await cleanupAllExpiredKeys();
+    const prodId = document.getElementById("keyProdSelect").value;
+    const nowMs = Date.now();
+
+    const pkgItems = [];
+    if (prodId) {
+      const snap = await getDocs(query(collection(db, COL_KEYS), where("productId", "==", prodId), where("sold", "==", false)));
+      snap.forEach(function (d) { if (!isKeyExpired(d.data(), nowMs)) pkgItems.push({ id: d.id, ...d.data() }); });
+    }
+    window._admPkgKeys = pkgItems;
+    filterAdminKeys("pkg");
+
+    const bulkSnap = await getDocs(query(collection(db, COL_KEYS), where("productId", "==", BULK_PRODUCT_ID), where("sold", "==", false)));
+    const bulkItems = [];
+    bulkSnap.forEach(function (d) { if (!isKeyExpired(d.data(), nowMs)) bulkItems.push({ id: d.id, ...d.data() }); });
+    window._admBulkKeys = bulkItems;
+    filterAdminKeys("bulk");
+
+    const ctvSnap = await getDocs(query(collection(db, COL_KEYS), where("productId", "==", CTV_PRODUCT_ID), where("sold", "==", false)));
+    const ctvItems = [];
+    ctvSnap.forEach(function (d) { if (!isKeyExpired(d.data(), nowMs)) ctvItems.push({ id: d.id, ...d.data() }); });
+    window._admCtvKeys = ctvItems;
+    filterAdminKeys("ctv");
+  };
+
+  window.toggleSelectAll = function (poolType, checked) {
+    const cls = poolType === "pkg" ? ".chk-pkg" : (poolType === "bulk" ? ".chk-bulk" : ".chk-ctv");
+    document.querySelectorAll(cls).forEach(function (cb) { cb.checked = Boolean(checked); });
+  };
+
+  window.deleteSelectedKeys = async function (poolType) {
+    if (!isAdmin()) return;
+    const cls = poolType === "pkg" ? ".chk-pkg" : (poolType === "bulk" ? ".chk-bulk" : ".chk-ctv");
+    const fbId = poolType === "pkg" ? "adminPkgKeysFeedback" : (poolType === "bulk" ? "adminBulkFeedback" : "adminCtvStockFeedback");
+    const checkedBoxes = Array.from(document.querySelectorAll(cls + ":checked"));
+    if (!checkedBoxes.length) return showErr("Vui lòng chọn ít nhất 1 key để xóa.", fbId);
+
+    for (const cb of checkedBoxes) await deleteDoc(doc(db, COL_KEYS, cb.value));
+    showMsg("Đã xóa " + checkedBoxes.length + " key.", fbId);
+    await loadProductsAndStock();
+  };
+
+  onAuthStateChanged(auth, async function (user) {
+    currentUser = user || null;
+    if (currentUser) {
+      await ensureUserDoc(currentUser);
+      await refreshUserStats();
+      if (isAdmin()) { await cleanupAllExpiredKeys(); await loadRoleLists(); }
+      await loadMyOrders();
+      await loadBalanceHistory();
+    } else {
+      await refreshUserStats();
+      await loadMyOrders();
+      await loadBalanceHistory();
+    }
+    await loadProductsAndStock();
+    await loadLeaderboard();
+  });
+</script>
+</body>
+</html>
